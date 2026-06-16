@@ -1,2 +1,3 @@
-# alquiler-gravel
-App para gestionar alquileres de bicis gravel en Madrid
+# Alquiler Gravel Madrid
+
+Landing deportiva con SEO para alquiler de bicicletas gravel en Madrid.
