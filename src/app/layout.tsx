@@ -29,8 +29,8 @@ export const metadata: Metadata = {
     canonical: "/",
     languages: {
       "es-ES": "/",
-      "en": "/en",
-    },
+      "en": "/en"
+    }
   },
   openGraph: {
     type: "website",
@@ -40,23 +40,23 @@ export const metadata: Metadata = {
     title: "Alquiler Gravel Madrid | Bicicletas gravel por días",
     description:
       "Alquila una bicicleta gravel en Madrid para rutas por Casa de Campo, El Pardo, Anillo Verde, Madrid Río y Sierra de Madrid.",
-    images: ["/og-image.svg"],
+    images: ["/og-image.svg"]
   },
   twitter: {
     card: "summary_large_image",
     title: "Alquiler Gravel Madrid | Gravel bike rental in Madrid",
     description:
       "Bicis gravel por días, fines de semana o semanas en Madrid. Gravel bikes for tourists and locals.",
-    images: ["/og-image.svg"],
+    images: ["/og-image.svg"]
   },
   robots: {
     index: true,
-    follow: true,
-  },
+    follow: true
+  }
 };
 
 export default function RootLayout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {

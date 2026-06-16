@@ -1,0 +1,35 @@
+INSTRUCCIONES IMPORTANTES
+
+1. Borra TODO el contenido actual del repositorio en GitHub.
+2. Descarga y descomprime este ZIP.
+3. Entra dentro de la carpeta descomprimida.
+4. Sube a GitHub EL CONTENIDO de la carpeta, no la carpeta entera y no el ZIP.
+
+En la raíz de GitHub debe verse:
+
+package.json
+tsconfig.json
+next.config.ts
+postcss.config.mjs
+eslint.config.mjs
+next-env.d.ts
+README.md
+public/
+src/
+
+NO debe quedar nada como:
+
+src/app/src/app/...
+
+Después:
+- Commit changes
+- Vercel redeployará automáticamente
+- Prueba / y /en
+
+Recuerda cambiar:
+34600000000
+por tu número real con prefijo España, sin +
+
+Y:
++34600000000
+por tu número real con +34

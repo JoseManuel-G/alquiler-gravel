@@ -9,14 +9,19 @@ type ReservationFormProps = {
 
 const copy = {
   es: {
-    eyebrow: "Reserva rápida",
-    title: "Consulta disponibilidad",
-    description: "Rellena los datos y se abrirá WhatsApp con tu solicitud preparada.",
+    eyebrow: "Solicitud de reserva",
+    title: "Comprueba disponibilidad",
+    description: "Indica recogida, devolución y altura. Se abrirá WhatsApp con tu solicitud preparada.",
     name: "Nombre",
     phone: "Teléfono",
-    date: "Fecha deseada",
+    email: "Email",
+    pickupDate: "Fecha de recogida",
+    pickupTime: "Hora de recogida",
+    returnDate: "Fecha de devolución",
+    returnTime: "Hora de devolución",
     plan: "Tipo de alquiler",
     height: "Altura aproximada. Ej: 1,78 m",
+    pickupArea: "Zona preferida de recogida",
     route: "Ruta o zona: Casa de Campo, El Pardo...",
     message: "Mensaje",
     button: "Enviar solicitud por WhatsApp",
@@ -24,23 +29,34 @@ const copy = {
     labels: {
       name: "Nombre",
       phone: "Teléfono",
-      date: "Fecha deseada",
+      email: "Email",
+      pickupDate: "Fecha de recogida",
+      pickupTime: "Hora de recogida",
+      returnDate: "Fecha de devolución",
+      returnTime: "Hora de devolución",
       plan: "Tipo de alquiler",
       height: "Altura aproximada",
+      pickupArea: "Zona preferida de recogida",
       route: "Ruta o zona",
-      message: "Mensaje",
+      message: "Mensaje"
     },
     plans: ["Medio día", "Día completo", "Fin de semana", "Semana"],
+    pickupAreas: ["Madrid centro", "Casa de Campo", "Madrid Río", "Moncloa", "El Pardo", "A concretar por WhatsApp"]
   },
   en: {
-    eyebrow: "Quick booking",
+    eyebrow: "Booking request",
     title: "Check availability",
-    description: "Fill in your details and WhatsApp will open with your request ready to send.",
+    description: "Choose pick-up, return and height. WhatsApp will open with your request ready.",
     name: "Name",
     phone: "Phone",
-    date: "Desired date",
+    email: "Email",
+    pickupDate: "Pick-up date",
+    pickupTime: "Pick-up time",
+    returnDate: "Return date",
+    returnTime: "Return time",
     plan: "Rental option",
     height: "Approx. height. Example: 1.78 m",
+    pickupArea: "Preferred pick-up area",
     route: "Route or area: Casa de Campo, El Pardo...",
     message: "Message",
     button: "Send request via WhatsApp",
@@ -48,30 +64,41 @@ const copy = {
     labels: {
       name: "Name",
       phone: "Phone",
-      date: "Desired date",
+      email: "Email",
+      pickupDate: "Pick-up date",
+      pickupTime: "Pick-up time",
+      returnDate: "Return date",
+      returnTime: "Return time",
       plan: "Rental option",
       height: "Approx. height",
+      pickupArea: "Preferred pick-up area",
       route: "Route or area",
-      message: "Message",
+      message: "Message"
     },
     plans: ["Half day", "Full day", "Weekend", "Week"],
-  },
+    pickupAreas: ["Madrid city centre", "Casa de Campo", "Madrid Río", "Moncloa", "El Pardo", "To be agreed on WhatsApp"]
+  }
 };
 
 export default function ReservationForm({
   whatsappNumber,
-  language = "es",
+  language = "es"
 }: ReservationFormProps) {
   const t = copy[language];
 
   const [form, setForm] = useState({
     name: "",
     phone: "",
-    date: "",
+    email: "",
+    pickupDate: "",
+    pickupTime: "",
+    returnDate: "",
+    returnTime: "",
     plan: t.plans[1],
     height: "",
+    pickupArea: t.pickupAreas[0],
     route: "",
-    message: "",
+    message: ""
   });
 
   function updateField(
@@ -88,9 +115,14 @@ ${t.whatsappIntro}
 
 ${t.labels.name}: ${form.name}
 ${t.labels.phone}: ${form.phone}
-${t.labels.date}: ${form.date}
+${t.labels.email}: ${form.email}
+${t.labels.pickupDate}: ${form.pickupDate}
+${t.labels.pickupTime}: ${form.pickupTime}
+${t.labels.returnDate}: ${form.returnDate}
+${t.labels.returnTime}: ${form.returnTime}
 ${t.labels.plan}: ${form.plan}
 ${t.labels.height}: ${form.height}
+${t.labels.pickupArea}: ${form.pickupArea}
 ${t.labels.route}: ${form.route}
 ${t.labels.message}: ${form.message}
     `.trim();
@@ -104,27 +136,57 @@ ${t.labels.message}: ${form.message}
   return (
     <form
       onSubmit={submitForm}
-      className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl backdrop-blur"
+      className="rounded-[2rem] border border-[#d9c7ad] bg-[#fffaf1] p-6 shadow-xl"
     >
-      <p className="text-sm font-black uppercase tracking-[0.3em] text-green-400">
+      <p className="text-xs font-black uppercase tracking-[0.28em] text-[#c86f3a]">
         {t.eyebrow}
       </p>
-      <h3 className="mt-3 text-2xl font-black text-white">{t.title}</h3>
-      <p className="mt-3 text-sm leading-6 text-stone-300">{t.description}</p>
+      <h3 className="mt-3 text-2xl font-black text-[#17212b]">{t.title}</h3>
+      <p className="mt-3 text-sm leading-6 text-[#5b5f62]">{t.description}</p>
 
       <div className="mt-6 grid gap-4">
-        <input name="name" required value={form.name} onChange={updateField} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none placeholder:text-stone-500 focus:border-green-500" placeholder={t.name} />
-        <input name="phone" required value={form.phone} onChange={updateField} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none placeholder:text-stone-500 focus:border-green-500" placeholder={t.phone} />
-        <input name="date" type="date" required value={form.date} onChange={updateField} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-green-500" />
-        <select name="plan" value={form.plan} onChange={updateField} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none focus:border-green-500">
+        <input name="name" required value={form.name} onChange={updateField} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none placeholder:text-[#8b8173] focus:border-[#c86f3a]" placeholder={t.name} />
+        <input name="phone" required value={form.phone} onChange={updateField} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none placeholder:text-[#8b8173] focus:border-[#c86f3a]" placeholder={t.phone} />
+        <input name="email" type="email" value={form.email} onChange={updateField} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none placeholder:text-[#8b8173] focus:border-[#c86f3a]" placeholder={t.email} />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[#776b5e]">{t.pickupDate}</label>
+            <input name="pickupDate" type="date" required value={form.pickupDate} onChange={updateField} className="w-full rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none focus:border-[#c86f3a]" />
+          </div>
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[#776b5e]">{t.pickupTime}</label>
+            <input name="pickupTime" type="time" required value={form.pickupTime} onChange={updateField} className="w-full rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none focus:border-[#c86f3a]" />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[#776b5e]">{t.returnDate}</label>
+            <input name="returnDate" type="date" required value={form.returnDate} onChange={updateField} className="w-full rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none focus:border-[#c86f3a]" />
+          </div>
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[#776b5e]">{t.returnTime}</label>
+            <input name="returnTime" type="time" required value={form.returnTime} onChange={updateField} className="w-full rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none focus:border-[#c86f3a]" />
+          </div>
+        </div>
+
+        <select name="plan" value={form.plan} onChange={updateField} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none focus:border-[#c86f3a]">
           {t.plans.map((plan) => (
             <option key={plan}>{plan}</option>
           ))}
         </select>
-        <input name="height" value={form.height} onChange={updateField} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none placeholder:text-stone-500 focus:border-green-500" placeholder={t.height} />
-        <input name="route" value={form.route} onChange={updateField} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none placeholder:text-stone-500 focus:border-green-500" placeholder={t.route} />
-        <textarea name="message" value={form.message} onChange={updateField} rows={4} className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none placeholder:text-stone-500 focus:border-green-500" placeholder={t.message} />
-        <button type="submit" className="rounded-full bg-green-500 px-6 py-4 font-black text-black transition hover:bg-green-400">
+
+        <select name="pickupArea" value={form.pickupArea} onChange={updateField} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none focus:border-[#c86f3a]">
+          {t.pickupAreas.map((area) => (
+            <option key={area}>{area}</option>
+          ))}
+        </select>
+
+        <input name="height" value={form.height} onChange={updateField} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none placeholder:text-[#8b8173] focus:border-[#c86f3a]" placeholder={t.height} />
+        <input name="route" value={form.route} onChange={updateField} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none placeholder:text-[#8b8173] focus:border-[#c86f3a]" placeholder={t.route} />
+        <textarea name="message" value={form.message} onChange={updateField} rows={4} className="rounded-2xl border border-[#d9c7ad] bg-white px-4 py-3 text-[#17212b] outline-none placeholder:text-[#8b8173] focus:border-[#c86f3a]" placeholder={t.message} />
+        <button type="submit" className="rounded-full bg-[#17212b] px-6 py-4 font-black text-white transition hover:bg-[#c86f3a]">
           {t.button}
         </button>
       </div>
