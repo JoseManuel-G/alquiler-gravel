@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ReservationForm from "@/components/ReservationForm";
 
-const whatsappNumber = "34600000000";
+const whatsappNumber = "34689458241";
 const whatsappText =
   "Hola, quiero alquilar una bici gravel en Madrid. ¿Tenéis disponibilidad?";
 const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
