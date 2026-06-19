@@ -106,13 +106,18 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden">
-        <div className="absolute -right-28 top-16 h-[520px] w-[520px] rounded-full bg-[#c86f3a]/15 blur-[80px]" />
-        <div className="absolute -left-28 bottom-8 h-[420px] w-[420px] rounded-full bg-[#516b57]/15 blur-[90px]" />
+      <section
+        className="relative isolate overflow-hidden bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(23,33,43,0.62), rgba(23,33,43,0.42)), url('/foto-portada.png')",
+        }}
+      >
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#17212b]/85 via-[#17212b]/55 to-[#17212b]/10" />
 
-        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 md:grid-cols-2 md:items-center lg:py-28">
-          <div className="relative z-10">
-            <p className="mb-5 inline-flex rounded-full border border-[#d9c7ad] bg-[#fffaf1] px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-[#c86f3a]">
+        <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-7xl items-center px-5 py-20 lg:py-28">
+          <div className="relative z-10 max-w-3xl text-white">
+            <p className="mb-5 inline-flex rounded-full border border-white/25 bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-[#e6b17e] backdrop-blur">
               Alquiler gravel Madrid
             </p>
 
@@ -120,7 +125,7 @@ export default function Home() {
               Gravel por Madrid, sin traer tu bici.
             </h1>
 
-            <p className="mt-7 max-w-xl text-lg leading-8 text-[#4f565b]">
+            <p className="mt-7 max-w-xl text-lg leading-8 text-stone-100">
               Alquila una bicicleta gravel en Madrid para rutas por Casa de
               Campo, El Pardo, Madrid Río, Anillo Verde o Sierra de Madrid.
               Bicis revisadas, reserva rápida por WhatsApp y alquiler por medio
@@ -131,52 +136,30 @@ export default function Home() {
               <a
                 href={whatsappUrl}
                 target="_blank"
-                className="rounded-full bg-[#17212b] px-8 py-4 text-center font-black text-white transition hover:bg-[#c86f3a]"
+                className="rounded-full bg-[#fffaf1] px-8 py-4 text-center font-black text-[#17212b] transition hover:bg-[#e6b17e]"
               >
                 Reservar por WhatsApp
               </a>
               <a
                 href="#precios"
-                className="rounded-full border border-[#c8b69d] px-8 py-4 text-center font-black text-[#17212b] transition hover:border-[#c86f3a] hover:text-[#c86f3a]"
+                className="rounded-full border border-white/60 bg-white/10 px-8 py-4 text-center font-black text-white backdrop-blur transition hover:bg-white hover:text-[#17212b]"
               >
                 Ver precios
               </a>
             </div>
 
             <div className="mt-10 grid max-w-xl grid-cols-3 gap-3">
-              <div className="rounded-3xl border border-[#e2d3bd] bg-[#fffaf1] p-4 shadow-sm">
-                <p className="text-2xl font-black text-[#c86f3a]">45€</p>
-                <p className="mt-1 text-xs text-[#776b5e]">día completo</p>
+              <div className="rounded-3xl border border-white/15 bg-white/15 p-4 shadow-sm backdrop-blur">
+                <p className="text-2xl font-black text-[#e6b17e]">45€</p>
+                <p className="mt-1 text-xs text-stone-200">día completo</p>
               </div>
-              <div className="rounded-3xl border border-[#e2d3bd] bg-[#fffaf1] p-4 shadow-sm">
-                <p className="text-2xl font-black text-[#c86f3a]">85€</p>
-                <p className="mt-1 text-xs text-[#776b5e]">fin de semana</p>
+              <div className="rounded-3xl border border-white/15 bg-white/15 p-4 shadow-sm backdrop-blur">
+                <p className="text-2xl font-black text-[#e6b17e]">85€</p>
+                <p className="mt-1 text-xs text-stone-200">fin de semana</p>
               </div>
-              <div className="rounded-3xl border border-[#e2d3bd] bg-[#fffaf1] p-4 shadow-sm">
-                <p className="text-2xl font-black text-[#516b57]">Madrid</p>
-                <p className="mt-1 text-xs text-[#776b5e]">rutas gravel</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative z-10 rounded-[2.5rem] border border-[#e2d3bd] bg-[#fffaf1] p-5 shadow-2xl">
-            <div className="flex min-h-[470px] flex-col justify-between rounded-[2rem] bg-[#17212b] p-8 text-white">
-              <div>
-                <p className="text-sm font-black uppercase tracking-[0.3em] text-[#e6b17e]">
-                  Ready to ride
-                </p>
-                <h2 className="mt-4 text-4xl font-black">
-                  Asfalto, pistas y aventura cerca de Madrid.
-                </h2>
-              </div>
-
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/10 p-6">
-                <p className="text-7xl">🚴‍♂️</p>
-                <p className="mt-5 text-lg font-bold">Foto real pendiente</p>
-                <p className="mt-2 text-sm leading-6 text-stone-300">
-                  Aquí pondremos una imagen real de las bicis con estética
-                  outdoor.
-                </p>
+              <div className="rounded-3xl border border-white/15 bg-white/15 p-4 shadow-sm backdrop-blur">
+                <p className="text-2xl font-black text-[#e6b17e]">Madrid</p>
+                <p className="mt-1 text-xs text-stone-200">rutas gravel</p>
               </div>
             </div>
           </div>
