@@ -3,7 +3,38 @@ import Link from "next/link";
 const services = [
   {
     number: "01",
-
+    title: "Estrategia & arquitectura",
+    description:
+      "Diseñamos la hoja de ruta, el gobierno y la arquitectura que conectan cada fuente de datos con objetivos reales de negocio.",
+    tags: ["Data Strategy", "Gobierno", "Cloud"],
+  },
+  {
+    number: "02",
+    title: "Plataformas de datos",
+    description:
+      "Construimos plataformas modernas para ingerir, transformar y servir datos fiables, desde el origen hasta cada equipo consumidor.",
+    tags: ["Lakehouse", "Data Warehouse", "Snowflake", "Microsoft Fabric"],
+  },
+  {
+    number: "03",
+    title: "Analítica & modelos semánticos",
+    description:
+      "Creamos una capa común de métricas y productos analíticos para que toda la organización decida con el mismo dato.",
+    tags: ["Power BI", "Modelos semánticos", "DAX", "Dashboards"],
+  },
+  {
+    number: "04",
+    title: "IA & agentes",
+    description:
+      "Llevamos la IA al flujo de trabajo con agentes conectados al conocimiento de la empresa, automatización y casos de uso medibles.",
+    tags: ["Agentes", "Copilot", "RAG", "Automatización"],
+  },
+  {
+    number: "05",
+    title: "Rendimiento & evolución",
+    description:
+      "Auditamos y optimizamos modelos, consultas, capacidades y costes para que el ecosistema escale sin perder velocidad ni control.",
+    tags: ["Performance", "FinOps", "Observabilidad", "Optimización"],
   },
 ];
 
@@ -49,21 +80,24 @@ export default function Home() {
           <em>Hagamos que decidan.</em>
         </h1>
         <p className="hero-copy">
-
+          Convertimos datos dispersos en una ventaja real, desde la <strong>estrategia y la plataforma</strong> hasta la analítica y la inteligencia artificial.
         </p>
         <div className="hero-actions">
           <Link href="#contacto" className="button button-primary">Hablemos de tu proyecto <Arrow /></Link>
           <Link href="#servicios" className="text-link">Descubre cómo ayudamos <span>↓</span></Link>
         </div>
         <div className="hero-footer">
-
+          <span>ESTRATEGIA</span><i />
+          <span>DATA PLATFORMS</span><i />
+          <span>ANALÍTICA</span><i />
+          <span>INTELIGENCIA ARTIFICIAL</span>
         </div>
       </section>
 
       <section className="manifesto section-pad">
         <p className="section-kicker">Lo que nos mueve</p>
         <p className="manifesto-copy">
- main
+          No implantamos tecnología por implantar. Creamos ecosistemas de datos que <span>cambian cómo trabaja tu negocio.</span>
         </p>
         <div className="manifesto-note">
           <span className="note-line" />
@@ -101,7 +135,31 @@ export default function Home() {
             <h2>Dos perfiles.<br /><span>Una misma obsesión.</span></h2>
           </div>
           <p>Hacer que la tecnología sea útil de verdad. Sin capas innecesarias, sin presentaciones eternas y con una implicación que no se delega.</p>
-
+        </div>
+        <div className="team-grid">
+          <article className="person-card person-dark">
+            <div className="person-top">
+              <span className="monogram">JP</span>
+              <a href={jaimeLinkedIn} target="_blank" rel="noreferrer" aria-label="LinkedIn de Jaime Pérez Delso">in</a>
+            </div>
+            <div>
+              <p className="person-role">DATA STRATEGY & BUSINESS INTELLIGENCE</p>
+              <h3>Jaime<br />Pérez Delso</h3>
+              <p className="person-copy">Conecta la visión de negocio con el dato para construir soluciones analíticas que las personas entienden, adoptan y usan.</p>
+            </div>
+          </article>
+          <article className="person-card person-accent">
+            <div className="person-top">
+              <span className="monogram">JG</span>
+              <a href={joseLinkedIn} target="_blank" rel="noreferrer" aria-label="LinkedIn de José Manuel González Albaladejo">in</a>
+            </div>
+            <div>
+              <p className="person-role">DATA PLATFORMS & ARTIFICIAL INTELLIGENCE</p>
+              <h3>José Manuel<br />González Albaladejo</h3>
+              <p className="person-copy">Convierte la complejidad técnica en arquitecturas y productos de datos sólidos, eficientes y preparados para la IA.</p>
+            </div>
+          </article>
+        </div>
         <p className="profile-disclaimer">Conoce la trayectoria completa y actualizada de Jaime y José Manuel en sus perfiles de LinkedIn.</p>
       </section>
 
@@ -135,7 +193,7 @@ export default function Home() {
 
       <footer>
         <div className="footer-brand"><span className="brand-mark">J²</span><span>Data & AI</span></div>
-
+        <p>Data Strategy · Platforms · Analytics · Artificial Intelligence</p>
         <p>© {new Date().getFullYear()} J² Data & AI</p>
       </footer>
     </main>
