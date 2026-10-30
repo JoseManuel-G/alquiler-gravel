@@ -101,7 +101,7 @@ test("Database: trips, mutual connections, private chat, host approval and RLS",
     assert.equal(
       (await db.query("select * from public.trips where user_id=$1", [ids[0]]))
         .rows.length,
-      1,
+      0,
     );
     await denied(
       "insert into public.messages(connection_id,sender_id,body) values($1,$2,$3)",

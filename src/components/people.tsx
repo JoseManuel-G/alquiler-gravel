@@ -46,7 +46,7 @@ export function People({ userId, onTrips }: { userId: string; onTrips: (person: 
     </div>
     {loading ? <p role="status">Cargando personas…</p> : error ? <div className="notice" role="alert"><p>{error}</p><Link href="/cuenta" className="text-button">Ir a mi perfil</Link><button className="text-button" onClick={() => setRetry(r => r + 1)}>Reintentar</button></div> : <>
       <div className="people-grid">{people.map(p => <article className="person-card" key={p.id}>
-        {p.avatar_url ? <Photo key={p.avatar_url} src={p.avatar_url} width={96} height={96} alt={`Foto de ${p.name}`} className="profile-photo" /> : <div className="photo-placeholder" aria-label="Sin foto">{p.name.charAt(0).toUpperCase()}</div>}
+        {p.avatar_url ? <Photo key={p.avatar_url} src={p.avatar_url} width={96} height={96} alt={`Foto de ${p.name}`} className="member-portrait" /> : <div className="photo-placeholder" aria-label="Sin foto">{p.name.charAt(0).toUpperCase()}</div>}
         <h3>{p.name}, {p.age}</h3><div className="chips"><span>{p.level}</span><span>{p.sport}</span></div>
         <p>{p.bio || "Todavía no ha añadido una presentación."}</p>{p.preferences && <p><strong>Le gusta:</strong> {p.preferences}</p>}
         <button className="button button-dark" onClick={() => onTrips(p)}>Ver sus viajes</button>
@@ -54,6 +54,6 @@ export function People({ userId, onTrips }: { userId: string; onTrips: (person: 
       {!people.length && <div className="empty-state"><h3>{page ? "No hay más personas." : "No hay otros miembros que mostrar."}</h3><p>{level || sport ? "Prueba a quitar los filtros." : "Los demás aparecerán cuando completen y guarden su perfil, sin necesidad de publicar un viaje."}</p></div>}
       <div className="inline-actions" style={{ marginTop: 24 }}><button className="button button-light" disabled={!page} onClick={() => setPage(p => p - 1)}>Anterior</button><span>Página {page + 1}</span><button className="button button-light" disabled={!more} onClick={() => setPage(p => p + 1)}>Siguiente</button></div>
     </>}
-    <p className="muted">Para solicitar una conexión y abrir un chat, busca un viaje que coincida contigo. El chat se habilita cuando la otra persona acepta.</p>
+    <p className="muted">Abre sus viajes y pulsa «Me interesa». No necesitas publicar un viaje propio. El chat se habilita cuando la otra persona acepta.</p>
   </section>;
 }

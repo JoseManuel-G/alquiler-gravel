@@ -77,6 +77,14 @@ Cada usuario sube y elimina solo archivos de su carpeta UUID. Solo el propietari
 
 La cabecera y la navegación móvil muestran la sesión activa; Cuenta confirma el email de la sesión. El registro distingue entre confirmación por correo y acceso inmediato cuando Confirm email está desactivado para pruebas.
 
-En Comunidad, «Viajes publicados» permite explorar próximas escapadas de otros miembros con perfil completo, filtrar por estación y fechas opcionales, ver su ficha y solicitar conexión. El listado se pagina en grupos de 12 y excluye los viajes propios y finalizados. Para solicitar conexión desde esta vista se requiere un viaje propio coincidente; se usan las fechas de intersección y nunca días anteriores a hoy.
+En Comunidad, «Viajes publicados» permite explorar próximas escapadas de otros miembros con perfil completo, filtrar por estación y fechas opcionales, ver su ficha y solicitar conexión. El listado se pagina en grupos de 12 y excluye los viajes propios y finalizados. Para solicitar conexión basta con interesarse por un viaje vigente; no se exige ni se publica un viaje propio.
 
 La pestaña «Personas» de Comunidad muestra perfiles públicos de miembros con perfil completo aunque no tengan viajes publicados. Permite filtrar por nivel y modalidad y ver los viajes de cada persona. El listado excluye al usuario actual, está paginado y no expone email ni fecha de nacimiento. No añade contacto directo sin consentimiento: las conexiones siguen vinculadas a un viaje y el chat requiere aceptación.
+
+## Inicio simplificado y solicitudes de interés
+
+Inicio con sesión y Comunidad muestran cuatro accesos: Ver viajes, Publicar un viaje, Ver personas y Mi perfil. Los filtros de estación/fechas están dentro de cada recorrido. Los viajes propios aparecen marcados y con gestión; las fotos de destino son ilustrativas y las fotos personales son las que sube cada miembro.
+
+En instalaciones existentes, ejecuta una vez `supabase/simple-connections.sql` en el Supabase dedicado a SKI MATCH (es seguro repetirlo). No repitas el esquema inicial. La nueva función `request_trip_connection` valida el perfil, la existencia y vigencia del viaje y evita solicitudes a uno mismo o duplicadas. No exige ni crea un viaje del solicitante. La actualización también elimina la publicación implícita en la función anterior. Solo el destinatario acepta; el chat mantiene las mismas políticas de consentimiento. Sin esta actualización, el botón explica que falta activar la función, sin volver al comportamiento anterior.
+
+Las pruebas de `simple-connections.test.mjs` verifican acceso anónimo/no confirmado, viajes inexistentes/finalizados, solicitudes a uno mismo/duplicadas y chat antes/después de aceptación, sin crear un viaje para el solicitante.

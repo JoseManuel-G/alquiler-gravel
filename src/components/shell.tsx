@@ -48,11 +48,11 @@ export function Header() {
             <Link
               onClick={() => setOpen(false)}
               className={path === "/" ? "active" : ""}
-              href="/#estaciones"
+              href="/?action=search#estaciones"
             >
               Explorar estaciones
             </Link>
-            <Link onClick={() => setOpen(false)} href="/#como-funciona">
+            <Link onClick={() => setOpen(false)} href="/?action=search#como-funciona">
               Cómo funciona
             </Link>
             <Link
@@ -78,13 +78,13 @@ export function Header() {
       </header>
       {user && <div className="session-bar"><span className="session-dot" /><span>Sesión iniciada</span><Link href="/cuenta">Mi perfil</Link></div>}
       <nav className="mobile-bottom" aria-label="Navegación móvil">
-        <Link href="/#estaciones">
-          <Compass size={20} />
-          Explorar
-        </Link>
         <Link href="/comunidad">
+          <Compass size={20} />
+          Inicio
+        </Link>
+        <Link href="/comunidad?view=publicados">
           <Users size={20} />
-          Comunidad
+          Viajes
         </Link>
         <Link href="/cuenta">
           <UserRound size={20} />
@@ -109,8 +109,8 @@ export function Footer() {
           </div>
           <div>
             <span>EXPLORA</span>
-            <Link href="/#estaciones">Estaciones</Link>
-            <Link href="/#como-funciona">Cómo funciona</Link>
+            <Link href="/?action=search#estaciones">Estaciones</Link>
+            <Link href="/?action=search#como-funciona">Cómo funciona</Link>
             <Link href="/comunidad">La comunidad</Link>
           </div>
           <div>

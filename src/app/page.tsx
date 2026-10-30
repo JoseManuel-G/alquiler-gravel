@@ -12,6 +12,7 @@ import {
   MoveDown,
 } from "lucide-react";
 import { getResorts } from "@/lib/catalog";
+import { HomeGate } from "@/components/community-start";
 import { Search } from "@/components/search";
 export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: { searchParams: Promise<{ action?: string }> }) {
@@ -19,7 +20,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ a
   const intent = action === "publish" ? "publish" : "search";
   const { resorts, demo, error } = await getResorts();
   return (
-    <main>
+    <HomeGate choosingDestination={!!action}><main>
       <section className="hero">
         <Image
           className="hero-image"
@@ -285,6 +286,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ a
         </Link>
         <MountainSnow className="cta-mountain" size={230} strokeWidth={0.5} />
       </section>
-    </main>
+    </main></HomeGate>
   );
 }

@@ -294,7 +294,7 @@ export function Account() {
             </form>
             <div className="inline-actions" style={{ marginTop: 20 }}>
               <Link href="/comunidad" className="button button-light">
-                Mis viajes y conexiones
+                Ir a la comunidad
               </Link>
               <button
                 className="text-button"

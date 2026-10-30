@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Users, Send, Check, X, Trash2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import Photo from "./photo";
+import { CommunityStart, PublishDestination } from "./community-start";
 import { People } from "./people";
 import { PublishedTrips } from "./published-trips";
 import type { Person, Plan } from "./station-community";
@@ -27,10 +29,10 @@ type Message = {
   created_at: string;
 };
 type Member = { id: string; plan_id: string; user_id: string; status: string };
-export function Community() {
+export function Community({ initialView = "inicio" }: { initialView?: string }) {
   const [user, setUser] = useState<User | null>(null);
   const [loaded, setLoaded] = useState(!supabase);
-  const [tab, setTab] = useState("publicados");
+  const [tab, setTab] = useState(initialView);
   const [traveler, setTraveler] = useState<{ id: string; name: string } | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -155,6 +157,7 @@ export function Community() {
     }
     setBusy(false);
   }
+  if (tab === "inicio") return <CommunityStart />;
   if (!loaded) return <p className="loading">Cargando tu comunidad…</p>;
   if (!user || !supabase)
     return (
@@ -192,34 +195,18 @@ export function Community() {
   const accepted = connections.filter((c) => c.status === "accepted");
   return (
     <section className="container community-workspace">
-      <div className="section-heading">
-        <div><p className="kicker">TU COMUNIDAD</p><h1>Tu próxima escapada empieza aquí</h1><p className="muted">Elige una estación para buscar compañía o publicar cuándo vas.</p></div>
-        <div className="inline-actions"><Link href="/?action=search#estaciones" className="button button-dark">Buscar compañeros</Link><Link href="/?action=publish#estaciones" className="button button-coral">Publicar un viaje</Link></div>
-      </div>
-      <div className="tabs">
-        {[
-          ["publicados", "Viajes publicados"],
-          ["personas", "Personas"],
-          ["viajes", "Mis viajes"],
-          ["conexiones", "Conexiones"],
-          ["planes", "Mis planes"],
-          ["mensajes", "Mensajes"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            className={tab === id ? "selected" : ""}
-            onClick={() => setTab(id)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <div className="community-toolbar"><Link href="/comunidad" className="text-button">← Inicio</Link><button className="text-button" onClick={() => setTab("viajes")}>Mis viajes</button><button className="text-button" onClick={() => setTab("conexiones")}>Conexiones{connections.some(c => c.status === "pending" && c.recipient_id === user.id) ? " · Nuevas" : ""}</button><button className="text-button" onClick={() => setTab("mensajes")}>Mensajes</button><button className="text-button" onClick={() => setTab("planes")}>Mis planes</button></div>
+      {tab === "publicar" && <PublishDestination />}
       {message && (
         <p role="status" className="notice">
           {message}
         </p>
       )}
-      {tab === "publicados" && <PublishedTrips userId={user.id} traveler={traveler} onClearTraveler={() => setTraveler(null)} />}
+      {tab === "publicados" && <PublishedTrips userId={user.id} traveler={traveler} onClearTraveler={() => setTraveler(null)} onManage={() => setTab("viajes")} onConnections={() => { void load(); setTab("conexiones"); }} onChat={async personId => {
+        const { data, error } = await db.from("connections").select("id").eq("status", "accepted").or(`and(requester_id.eq.${user.id},recipient_id.eq.${personId}),and(requester_id.eq.${personId},recipient_id.eq.${user.id})`).maybeSingle();
+        if (data && !error) { setActive(data.id); setTab("mensajes"); }
+        else { void load(); setTab("conexiones"); }
+      }} />}
       {tab === "personas" && <People userId={user.id} onTrips={person => { setTraveler({ id: person.id, name: person.name }); setTab("publicados"); }} />}
       {tab === "viajes" && (
         <>
@@ -279,9 +266,12 @@ export function Community() {
             {connections.map((c) => {
               const incoming = c.recipient_id === user.id;
               const other = incoming ? c.requester_id : c.recipient_id;
+              const person = profiles.find(p => p.id === other);
               return (
                 <article key={c.id} className="plan-card">
+                  {profiles.find(p => p.id === other)?.avatar_url && <Photo src={profiles.find(p => p.id === other)!.avatar_url!} width={96} height={96} className="profile-photo" alt={`Foto de ${name(other)}`} />}
                   <h3>{name(other)}</h3>
+                  {person && <><div className="chips"><span>{person.level}</span><span>{person.sport}</span></div><p>{person.bio}</p></>}
                   <p>
                     {c.status === "accepted"
                       ? "Conexión aceptada"

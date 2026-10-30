@@ -5,9 +5,9 @@ import Photo from "./photo";
 import { supabase } from "@/lib/supabase";
 import type { Person } from "./station-community";
 
-type PublishedTrip = { id: string; user_id: string; resort_id: string; starts_on: string; ends_on: string; resorts: { name: string; slug: string } | null; person?: Person };
+type PublishedTrip = { id: string; user_id: string; resort_id: string; starts_on: string; ends_on: string; resorts: { name: string; slug: string; image: string } | null; person?: Person };
 const pageSize = 12;
-export function PublishedTrips({ userId, traveler, onClearTraveler }: { userId: string; traveler?: { id: string; name: string } | null; onClearTraveler?: () => void }) {
+export function PublishedTrips({ userId, traveler, onClearTraveler, onManage, onConnections, onChat }: { onChat: (personId: string) => void; userId: string; onManage: () => void; onConnections: () => void; traveler?: { id: string; name: string } | null; onClearTraveler?: () => void }) {
   const [station, setStation] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -20,6 +20,7 @@ export function PublishedTrips({ userId, traveler, onClearTraveler }: { userId: 
   const [notice, setNotice] = useState("");
   const [sending, setSending] = useState("");
   const [sent, setSent] = useState<string[]>([]);
+  const [connected, setConnected] = useState<string[]>([]);
   useEffect(() => {
     if (!supabase) return;
     void supabase.from("resorts").select("id,name").order("position").then(({ data }) => setResorts(data || []));
@@ -33,7 +34,7 @@ export function PublishedTrips({ userId, traveler, onClearTraveler }: { userId: 
       const member = await supabase.from("profiles").select("id").eq("id", userId).maybeSingle();
       if (!active) return;
       if (member.error || !member.data) { setError("Completa y guarda tu perfil para ver los viajes de otros miembros."); setLoading(false); return; }
-      let query = supabase.from("trips").select("id,user_id,resort_id,starts_on,ends_on,resorts(name,slug)").neq("user_id", userId).gte("ends_on", new Date().toLocaleDateString("en-CA")).order("starts_on").order("id").range(page * pageSize, (page + 1) * pageSize);
+      let query = supabase.from("trips").select("id,user_id,resort_id,starts_on,ends_on,resorts(name,slug,image)").gte("ends_on", new Date().toLocaleDateString("en-CA")).order("starts_on").order("id").range(page * pageSize, (page + 1) * pageSize);
       if (traveler) query = query.eq("user_id", traveler.id);
       if (station) query = query.eq("resort_id", station);
       if (from) query = query.gte("ends_on", from);
@@ -41,6 +42,10 @@ export function PublishedTrips({ userId, traveler, onClearTraveler }: { userId: 
       const { data, error } = await query;
       if (!active) return;
       if (error) { setError("No se pudieron cargar los viajes. Vuelve a intentarlo."); setLoading(false); return; }
+      const connections = await supabase.from("connections").select("requester_id,recipient_id,status").or(`requester_id.eq.${userId},recipient_id.eq.${userId}`);
+      if (!active) return;
+      setSent((connections.data || []).filter(c => c.status !== "accepted").map(c => c.requester_id === userId ? c.recipient_id : c.requester_id));
+      setConnected((connections.data || []).filter(c => c.status === "accepted").map(c => c.requester_id === userId ? c.recipient_id : c.requester_id));
       const rows = (data || []) as unknown as PublishedTrip[];
       const visible = rows.slice(0, pageSize);
       const ids = [...new Set(visible.map(t => t.user_id))];
@@ -56,32 +61,38 @@ export function PublishedTrips({ userId, traveler, onClearTraveler }: { userId: 
   async function connect(t: PublishedTrip) {
     if (!supabase) return;
     setSending(t.id); setNotice("");
-    const { data, error } = await supabase.from("trips").select("starts_on,ends_on").eq("user_id", userId).eq("resort_id", t.resort_id).lte("starts_on", t.ends_on).gte("ends_on", t.starts_on).limit(1);
-    if (error || !data?.length) { setNotice("Para conectar, publica primero tu propio viaje a esa estación en fechas que coincidan. Usa «Voy en estas fechas» en la tarjeta."); setSending(""); return; }
-    const result = await supabase.rpc("request_connection", { target_user: t.user_id, station: t.resort_id, date_from: [t.starts_on, data[0].starts_on, new Date().toLocaleDateString("en-CA")].sort().at(-1), date_to: [t.ends_on, data[0].ends_on].sort()[0] });
-    setNotice(result.error ? result.error.message : "Solicitud enviada. Podréis conversar cuando la otra persona acepte en Comunidad → Conexiones.");
-    if (!result.error) setSent(s => [...s, t.user_id]);
+    try {
+      const result = await supabase.rpc("request_trip_connection", { trip: t.id });
+      if (result.error) {
+        setNotice(result.error.code === "PGRST202" ? "Falta activar las conexiones simplificadas en Supabase. Ejecuta simple-connections.sql en el proyecto de SKI MATCH." : result.error.message);
+      } else {
+        setNotice("¡Solicitud enviada! Cuando acepte, podréis hablar por chat. No se ha publicado ningún viaje en tu nombre.");
+        setSent(s => [...s, t.user_id]);
+      }
+    } catch { setNotice("No se pudo enviar la solicitud. Vuelve a intentarlo."); }
     setSending("");
   }
   return <section>
-    <h2>{traveler ? `Viajes de ${traveler.name}` : "Viajes publicados"}</h2>
+    <h2>{traveler ? `Viajes de ${traveler.name}` : "Encuentra tu próxima escapada"}</h2>
     {traveler && <button className="text-button" onClick={() => { setPage(0); onClearTraveler?.(); }}>Ver viajes de todos los miembros →</button>}
-    <p className="muted">Descubre próximas escapadas de otros miembros. No necesitas elegir fechas para explorar. Tus viajes están en «Mis viajes».</p>
-    <div className="filters">
+    <p className="muted">Ve un viaje que te guste y pulsa «Me interesa». Si la otra persona acepta, podéis hablar. No necesitas publicar un viaje propio.</p>
+    <details className="trip-filter-panel"><summary>Filtrar por estación o fechas</summary><div className="filters">
       <label className="field">Estación<select value={station} onChange={e => { setStation(e.target.value); setPage(0); }}><option value="">Todas las estaciones</option>{resorts.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
       <label className="field">Desde · opcional<input type="date" value={from} onChange={e => { setFrom(e.target.value); setPage(0); }} /></label>
       <label className="field">Hasta · opcional<input type="date" min={from} value={to} onChange={e => { setTo(e.target.value); setPage(0); }} /></label>
       <button className="button button-light" onClick={() => { setStation(""); setFrom(""); setTo(""); setPage(0); onClearTraveler?.(); }}>Quitar filtros</button>
-    </div>
-    {notice && <p className="notice" role="status">{notice}</p>}
+    </div></details>
+    {notice && <div className="notice" role="status"><p>{notice}</p><button className="text-button" onClick={onConnections}>Ver conexiones y solicitudes →</button></div>}
     {loading ? <p role="status">Cargando viajes publicados…</p> : error ? <p className="notice" role="alert">{error} <Link href="/cuenta">Mi perfil →</Link></p> : <>
-      <div className="people-grid">{trips.map(t => <article className="person-card" key={t.id}>
-        {t.person?.avatar_url && <Photo src={t.person.avatar_url} width={64} height={64} className="profile-photo" alt={`Foto de ${t.person.name}`} />}
-        <h3>{t.resorts?.name || "Estación"}</h3>
-        <p><strong>{t.person?.name || "Miembro"}{t.person ? `, ${t.person.age}` : ""}</strong></p>
-        <p>{new Date(t.starts_on + "T12:00:00").toLocaleDateString("es-ES")} → {new Date(t.ends_on + "T12:00:00").toLocaleDateString("es-ES")}</p>
-        {t.person && <><div className="chips"><span>{t.person.level}</span><span>{t.person.sport}</span></div><details><summary>Ver perfil</summary><p>{t.person.bio || "Sin biografía todavía."}</p><p>{t.person.preferences}</p></details></>}
-        <div className="inline-actions"><button disabled={!!sending || sent.includes(t.user_id)} className="button button-coral" onClick={() => void connect(t)}>{sent.includes(t.user_id) ? "Solicitud enviada" : sending === t.id ? "Enviando…" : "Solicitar conexión"}</button>{t.resorts && <Link className="button button-light" href={`/estaciones/${t.resorts.slug}?action=publish&from=${t.starts_on}&to=${t.ends_on}#companeros`}>Voy en estas fechas</Link>}</div>
+      <div className="people-grid travel-feed">{trips.map(t => <article className="person-card travel-card" key={t.id}>
+        <div className="travel-cover">{t.resorts?.image && <Photo src={t.resorts.image} fill sizes="(max-width: 700px) 100vw, 33vw" alt={`Paisaje ilustrativo de montaña para el viaje a ${t.resorts.name}`} />}<span className="travel-destination">{t.resorts?.name || "Estación"}</span></div>
+        <div className="travel-body">
+          <div className="travel-person">{t.person?.avatar_url ? <Photo key={t.person.avatar_url} src={t.person.avatar_url} width={88} height={88} className="profile-photo" alt={`Foto de ${t.person.name}`} /> : <div className="photo-placeholder">{t.person?.name.charAt(0).toUpperCase() || "?"}</div>}<div><h3>{t.person?.name || "Miembro"}{t.person ? `, ${t.person.age}` : ""}</h3><span>{t.user_id === userId ? "Tu viaje" : "Busca compañía para esquiar"}</span></div></div>
+          <p className="travel-dates">{new Date(t.starts_on + "T12:00:00").toLocaleDateString("es-ES")} → {new Date(t.ends_on + "T12:00:00").toLocaleDateString("es-ES")}</p>
+          {t.person && <><div className="chips"><span>{t.person.level}</span><span>{t.person.sport}</span></div><p>{t.person.bio || "Unos días de montaña, mejor en compañía."}</p><details><summary>Más sobre {t.person.name}</summary><p>{t.person.preferences || "Todavía no ha indicado preferencias."}</p></details></>}
+          {t.user_id === userId ? <button className="button button-light" onClick={onManage}>Gestionar mi viaje</button> : connected.includes(t.user_id) ? <button className="button button-dark" onClick={() => onChat(t.user_id)}>Abrir chat</button> : sent.includes(t.user_id) ? <button className="button button-light" onClick={onConnections}>Ver solicitud</button> : <button disabled={!!sending} className="button button-coral" onClick={() => void connect(t)}>{sending === t.id ? "Enviando…" : "Me interesa · Conectar"}</button>}
+          {t.resorts && <small>Imagen de destino ilustrativa · no es una foto del viajero.</small>}
+        </div>
       </article>)}</div>
       {!trips.length && <div className="empty-state"><h3>{page ? "No hay más viajes." : traveler ? "Esta persona todavía no tiene viajes para mostrar con estos filtros." : "Todavía no hay viajes para mostrar."}</h3><p>Prueba otras fechas o estaciones, o publica tu próxima escapada.</p><Link href="/?action=publish#estaciones" className="button button-dark">Publicar mi viaje</Link></div>}
       <div className="inline-actions" style={{ marginTop: 24 }}><button disabled={!page} className="button button-light" onClick={() => setPage(p => p - 1)}>Anterior</button><span>Página {page + 1}</span><button disabled={!more} className="button button-light" onClick={() => setPage(p => p + 1)}>Siguiente</button></div>
