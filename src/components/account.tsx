@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import Image from "@/components/photo";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
@@ -18,6 +18,24 @@ export function Account() {
   const [sport, setSport] = useState("Esquí");
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [savedAvatar, setSavedAvatar] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState("");
+  useEffect(() => {
+    return () => { if (photoPreview) URL.revokeObjectURL(photoPreview); };
+  }, [photoPreview]);
+  function choosePhoto(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setMessage("Elige una foto JPG, PNG o WebP de hasta 5 MB.");
+      e.target.value = "";
+      return;
+    }
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+    setMessage("");
+  }
   const [preferences, setPreferences] = useState("");
   useEffect(() => {
     if (!supabase) return;
@@ -41,6 +59,7 @@ export function Account() {
           setSport(data.sport);
           setBio(data.bio || "");
           setAvatar(data.avatar_url || "");
+          setSavedAvatar(data.avatar_url || "");
           setPreferences(data.preferences || "");
         }
       }
@@ -67,7 +86,7 @@ export function Account() {
     const password = String(f.get("password") || "");
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -77,7 +96,7 @@ export function Account() {
         });
         if (error) throw error;
         setMessage(
-          "Cuenta solicitada. Revisa tu correo y confirma tu email antes de iniciar sesión.",
+          data.session ? "¡Ya estás dentro! Completa tu perfil para participar." : "Cuenta solicitada. Revisa tu correo y confirma tu email antes de iniciar sesión.",
         );
       } else if (mode === "reset") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -114,24 +133,35 @@ export function Account() {
     e.preventDefault();
     if (!supabase || !user) return;
     setBusy(true);
-    const { error } = await supabase
-      .from("profiles")
-      .upsert({
-        id: user.id,
-        name: name.trim(),
-        birth_date: birth,
-        level,
-        sport,
-        bio: bio.trim(),
-        avatar_url: avatar.trim() || null,
-        preferences: preferences.trim(),
+    setMessage("");
+    let uploadedPath: string | null = null;
+    try {
+      let nextAvatar = avatar;
+      if (photoFile) {
+        const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[photoFile.type];
+        uploadedPath = `${user.id}/${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage.from("avatars").upload(uploadedPath, photoFile, { contentType: photoFile.type, upsert: false });
+        if (error) throw new Error("No se pudo subir la foto. Comprueba que está configurado el almacenamiento de fotos. " + error.message);
+        nextAvatar = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/authenticated/avatars/${uploadedPath}`;
+      }
+      const { error } = await supabase.from("profiles").upsert({
+        id: user.id, name: name.trim(), birth_date: birth, level, sport,
+        bio: bio.trim(), avatar_url: nextAvatar || null, preferences: preferences.trim(),
       });
-    setMessage(
-      error
-        ? "No se pudo guardar: " + error.message
-        : "Perfil guardado. ¡Nos vemos arriba!",
-    );
-    setBusy(false);
+      if (error) throw error;
+      const prefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/authenticated/avatars/`;
+      if (savedAvatar.startsWith(prefix) && savedAvatar !== nextAvatar)
+        await supabase.storage.from("avatars").remove([savedAvatar.slice(prefix.length)]);
+      setAvatar(nextAvatar);
+      setSavedAvatar(nextAvatar);
+      setPhotoFile(null);
+      setPhotoPreview("");
+      window.dispatchEvent(new Event("ski-profile-updated"));
+      setMessage("Perfil guardado. ¡Nos vemos arriba!");
+    } catch (error) {
+      if (uploadedPath) await supabase.storage.from("avatars").remove([uploadedPath]);
+      setMessage(error instanceof Error ? error.message : "No se pudo guardar el perfil.");
+    } finally { setBusy(false); }
   }
   if (!loaded) return <p className="loading">Cargando tu cuenta…</p>;
   return (
@@ -158,6 +188,7 @@ export function Account() {
         </div>
       </aside>
       <section className="auth-panel">
+        {message && <p className="notice" role="status">{message}</p>}
         {!supabase && (
           <div className="notice">
             <ShieldCheck size={20} />
@@ -172,7 +203,7 @@ export function Account() {
           <>
             <p className="kicker">TU ESPACIO EN LA MONTAÑA</p>
             <h1>Mi perfil</h1>
-            <p className="muted">{user.email}</p>
+            <div className="session-notice" role="status"><ShieldCheck size={20} /><div><strong>Has iniciado sesión</strong><br /><span>{user.email}</span></div></div>
             <form className="form-stack" onSubmit={save}>
               <label className="field">
                 Nombre público
@@ -239,16 +270,15 @@ export function Account() {
                   placeholder="Primera hora, après-ski, bajadas tranquilas…"
                 />
               </label>
-              <label className="field">
-                Foto de perfil · URL HTTPS
-                <input
-                  type="url"
-                  pattern="https://.*"
-                  value={avatar}
-                  onChange={(e) => setAvatar(e.target.value)}
-                  placeholder="https://…"
-                />
-              </label>
+              <div className="photo-editor">
+                {photoPreview || avatar ? <Image key={photoPreview || avatar} src={photoPreview || avatar} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Sin foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
+                <label className="field">
+                  Foto de perfil
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} disabled={busy} aria-describedby="photo-help" />
+                  <small id="photo-help">Elige una foto · JPG, PNG o WebP · Máximo 5 MB. Se subirá al guardar el perfil.</small>
+                </label>
+                {(avatar || photoFile) && <button type="button" className="text-button" disabled={busy} onClick={() => { setAvatar(""); setPhotoFile(null); setPhotoPreview(""); }}>Quitar foto</button>}
+              </div>
               <p className="muted">
                 Tu nombre, edad, nivel, foto y preferencias son visibles para
                 los miembros verificados. Tu email y fecha de nacimiento no se
@@ -402,11 +432,7 @@ export function Account() {
             </p>
           </>
         )}
-        {message && (
-          <p className="notice" role="status">
-            {message}
-          </p>
-        )}
+
       </section>
     </div>
   );

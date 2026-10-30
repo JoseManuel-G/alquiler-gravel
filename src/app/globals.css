@@ -2061,3 +2061,14 @@ h2 {
     transition: none !important;
   }
 }
+
+.session-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #34d399; flex-shrink: 0; }
+.session-bar { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 8px 16px; background: #eaf7f1; color: #145c40; font-size: 14px; }
+.session-bar a { font-weight: 700; text-decoration: underline; }
+.session-notice { display: flex; align-items: center; gap: 12px; padding: 16px; background: #eaf7f1; color: #145c40; border-radius: 12px; margin: 16px 0 24px; overflow-wrap: anywhere; }
+.photo-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 20px; border: 1px solid #d5e1e8; border-radius: 14px; }
+.photo-editor .field { flex: 1; min-width: 0; }
+.photo-editor input { width: 100%; max-width: 100%; padding: 10px 0; border: 0; font-size: 14px; }
+.photo-editor small { font-weight: 400; line-height: 1.5; }
+.profile-photo, .photo-placeholder { width: 96px; height: 96px; object-fit: cover; border-radius: 50%; flex-shrink: 0; }
+.photo-placeholder { display: grid; place-items: center; background: #eaf1f6; color: #16344b; font-size: 32px; }

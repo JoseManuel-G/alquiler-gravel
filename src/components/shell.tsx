@@ -9,8 +9,10 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 export function Brand() {
   return (
     <Link href="/" className="brand" aria-label="Ski Match, inicio">
@@ -25,6 +27,15 @@ export function Brand() {
 export function Header() {
   const [open, setOpen] = useState(false);
   const path = usePathname();
+  const [user, setUser] = useState<User | null>(null);
+  const [ready, setReady] = useState(!supabase);
+  useEffect(() => {
+    if (!supabase) return;
+    let active = true;
+    void supabase.auth.getUser().then(({ data }) => { if (active) { setUser(data.user); setReady(true); } });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => { setUser(session?.user || null); setReady(true); });
+    return () => { active = false; subscription.unsubscribe(); };
+  }, []);
   return (
     <>
       <header className="header">
@@ -53,7 +64,7 @@ export function Header() {
             </Link>
           </nav>
           <Link className="button button-dark header-button" href="/cuenta">
-            Únete a la aventura <ArrowUpRight size={16} />
+            {user ? <><span className="session-dot" />Mi perfil · Dentro</> : ready ? <>Iniciar sesión <ArrowUpRight size={16} /></> : "Cargando…"}
           </Link>
           <button
             className="menu-button icon-button"
@@ -65,6 +76,7 @@ export function Header() {
           </button>
         </div>
       </header>
+      {user && <div className="session-bar"><span className="session-dot" /><span>Sesión iniciada</span><Link href="/cuenta">Mi perfil</Link></div>}
       <nav className="mobile-bottom" aria-label="Navegación móvil">
         <Link href="/#estaciones">
           <Compass size={20} />
@@ -76,7 +88,7 @@ export function Header() {
         </Link>
         <Link href="/cuenta">
           <UserRound size={20} />
-          Mi perfil
+          {user ? "Mi perfil · Dentro" : "Entrar"}
         </Link>
       </nav>
     </>

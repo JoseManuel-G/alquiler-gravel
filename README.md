@@ -35,7 +35,7 @@ Con Supabase configurado, las estaciones se leen desde la tabla `resorts`, sin o
 
 - Portada visual, buscador de destino/fecha/nivel y páginas de cada estación.
 - Supabase Auth: email/contraseña, verificación, recuperación y cierre de sesión.
-- Perfil: nombre, edad derivada, nivel, modalidad, biografía, preferencias y foto mediante URL HTTPS.
+- Perfil: nombre, edad derivada, nivel, modalidad, biografía, preferencias y subida de foto con vista previa (JPG/PNG/WebP, hasta 5 MB).
 - Viajes con búsqueda por solapamiento inclusivo de fechas, filtro de nivel y publicación/eliminación del propio viaje.
 - Solicitudes de conexión únicas por pareja. Solo el destinatario puede aceptar/rechazar; una conexión aceptada habilita el chat.
 - Chat privado persistente, actualizado cada cinco segundos. Se muestran los últimos 100 mensajes. Eliminar la conexión elimina su conversación.
@@ -68,3 +68,11 @@ El README anterior indicaba que Vercel está conectado a `main`. Subir a `main` 
 - Completar identidad y contacto del operador, textos legales definitivos, canal de atención/moderación y procedimiento de exportación/eliminación de cuentas antes del registro público. Las páginas informativas son borradores transparentemente marcados, no asesoramiento legal.
 - No hay notificaciones push/email para matches, geolocalización, pagos ni meteorología en vivo.
 - Para escalar, añadir paginación de perfiles/planes, límites de uso, observabilidad, moderación y gestión de imágenes. El chat usa polling; no requiere configurar Realtime.
+
+## Fotos de perfil
+
+Después del esquema inicial, ejecuta `supabase/avatars.sql` en el SQL Editor del proyecto dedicado a Ski Match. No vuelvas a ejecutar `schema.sql` si ya está instalado. El archivo adicional se puede repetir y configura exclusivamente el bucket privado `avatars` y sus políticas.
+
+Cada usuario sube y elimina solo archivos de su carpeta UUID. Solo el propietario o miembros con perfil completo pueden leer fotos mediante enlaces firmados de diez minutos. El límite de 5 MB y los tipos JPG/PNG/WebP se validan también en Storage. Las fotos nuevas se guardan al pulsar «Guardar perfil»; si falla el guardado del perfil se intenta retirar la subida. La eliminación de archivos antiguos es de mejor esfuerzo; para borrar cuentas hay que retirar también sus objetos de Storage.
+
+La cabecera y la navegación móvil muestran la sesión activa; Cuenta confirma el email de la sesión. El registro distingue entre confirmación por correo y acceso inmediato cuando Confirm email está desactivado para pruebas.
