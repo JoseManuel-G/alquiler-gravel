@@ -78,3 +78,5 @@ Cada usuario sube y elimina solo archivos de su carpeta UUID. Solo el propietari
 La cabecera y la navegación móvil muestran la sesión activa; Cuenta confirma el email de la sesión. El registro distingue entre confirmación por correo y acceso inmediato cuando Confirm email está desactivado para pruebas.
 
 En Comunidad, «Viajes publicados» permite explorar próximas escapadas de otros miembros con perfil completo, filtrar por estación y fechas opcionales, ver su ficha y solicitar conexión. El listado se pagina en grupos de 12 y excluye los viajes propios y finalizados. Para solicitar conexión desde esta vista se requiere un viaje propio coincidente; se usan las fechas de intersección y nunca días anteriores a hoy.
+
+La pestaña «Personas» de Comunidad muestra perfiles públicos de miembros con perfil completo aunque no tengan viajes publicados. Permite filtrar por nivel y modalidad y ver los viajes de cada persona. El listado excluye al usuario actual, está paginado y no expone email ni fecha de nacimiento. No añade contacto directo sin consentimiento: las conexiones siguen vinculadas a un viaje y el chat requiere aceptación.

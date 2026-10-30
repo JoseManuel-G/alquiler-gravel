@@ -7,7 +7,7 @@ import type { Person } from "./station-community";
 
 type PublishedTrip = { id: string; user_id: string; resort_id: string; starts_on: string; ends_on: string; resorts: { name: string; slug: string } | null; person?: Person };
 const pageSize = 12;
-export function PublishedTrips({ userId }: { userId: string }) {
+export function PublishedTrips({ userId, traveler, onClearTraveler }: { userId: string; traveler?: { id: string; name: string } | null; onClearTraveler?: () => void }) {
   const [station, setStation] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -34,6 +34,7 @@ export function PublishedTrips({ userId }: { userId: string }) {
       if (!active) return;
       if (member.error || !member.data) { setError("Completa y guarda tu perfil para ver los viajes de otros miembros."); setLoading(false); return; }
       let query = supabase.from("trips").select("id,user_id,resort_id,starts_on,ends_on,resorts(name,slug)").neq("user_id", userId).gte("ends_on", new Date().toLocaleDateString("en-CA")).order("starts_on").order("id").range(page * pageSize, (page + 1) * pageSize);
+      if (traveler) query = query.eq("user_id", traveler.id);
       if (station) query = query.eq("resort_id", station);
       if (from) query = query.gte("ends_on", from);
       if (to) query = query.lte("starts_on", to);
@@ -51,7 +52,7 @@ export function PublishedTrips({ userId }: { userId: string }) {
     }
     void load();
     return () => { active = false; };
-  }, [userId, station, from, to, page]);
+  }, [userId, station, from, to, page, traveler]);
   async function connect(t: PublishedTrip) {
     if (!supabase) return;
     setSending(t.id); setNotice("");
@@ -63,13 +64,14 @@ export function PublishedTrips({ userId }: { userId: string }) {
     setSending("");
   }
   return <section>
-    <h2>Viajes publicados</h2>
+    <h2>{traveler ? `Viajes de ${traveler.name}` : "Viajes publicados"}</h2>
+    {traveler && <button className="text-button" onClick={() => { setPage(0); onClearTraveler?.(); }}>Ver viajes de todos los miembros →</button>}
     <p className="muted">Descubre próximas escapadas de otros miembros. No necesitas elegir fechas para explorar. Tus viajes están en «Mis viajes».</p>
     <div className="filters">
       <label className="field">Estación<select value={station} onChange={e => { setStation(e.target.value); setPage(0); }}><option value="">Todas las estaciones</option>{resorts.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
       <label className="field">Desde · opcional<input type="date" value={from} onChange={e => { setFrom(e.target.value); setPage(0); }} /></label>
       <label className="field">Hasta · opcional<input type="date" min={from} value={to} onChange={e => { setTo(e.target.value); setPage(0); }} /></label>
-      <button className="button button-light" onClick={() => { setStation(""); setFrom(""); setTo(""); setPage(0); }}>Quitar filtros</button>
+      <button className="button button-light" onClick={() => { setStation(""); setFrom(""); setTo(""); setPage(0); onClearTraveler?.(); }}>Quitar filtros</button>
     </div>
     {notice && <p className="notice" role="status">{notice}</p>}
     {loading ? <p role="status">Cargando viajes publicados…</p> : error ? <p className="notice" role="alert">{error} <Link href="/cuenta">Mi perfil →</Link></p> : <>
@@ -81,7 +83,7 @@ export function PublishedTrips({ userId }: { userId: string }) {
         {t.person && <><div className="chips"><span>{t.person.level}</span><span>{t.person.sport}</span></div><details><summary>Ver perfil</summary><p>{t.person.bio || "Sin biografía todavía."}</p><p>{t.person.preferences}</p></details></>}
         <div className="inline-actions"><button disabled={!!sending || sent.includes(t.user_id)} className="button button-coral" onClick={() => void connect(t)}>{sent.includes(t.user_id) ? "Solicitud enviada" : sending === t.id ? "Enviando…" : "Solicitar conexión"}</button>{t.resorts && <Link className="button button-light" href={`/estaciones/${t.resorts.slug}?action=publish&from=${t.starts_on}&to=${t.ends_on}#companeros`}>Voy en estas fechas</Link>}</div>
       </article>)}</div>
-      {!trips.length && <div className="empty-state"><h3>{page ? "No hay más viajes." : "Todavía no hay viajes para mostrar."}</h3><p>Prueba otras fechas o estaciones, o publica tu próxima escapada.</p><Link href="/?action=publish#estaciones" className="button button-dark">Publicar mi viaje</Link></div>}
+      {!trips.length && <div className="empty-state"><h3>{page ? "No hay más viajes." : traveler ? "Esta persona todavía no tiene viajes para mostrar con estos filtros." : "Todavía no hay viajes para mostrar."}</h3><p>Prueba otras fechas o estaciones, o publica tu próxima escapada.</p><Link href="/?action=publish#estaciones" className="button button-dark">Publicar mi viaje</Link></div>}
       <div className="inline-actions" style={{ marginTop: 24 }}><button disabled={!page} className="button button-light" onClick={() => setPage(p => p - 1)}>Anterior</button><span>Página {page + 1}</span><button disabled={!more} className="button button-light" onClick={() => setPage(p => p + 1)}>Siguiente</button></div>
     </>}
   </section>;
