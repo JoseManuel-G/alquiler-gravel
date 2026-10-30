@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Users, Send, Check, X, Trash2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { PublishedTrips } from "./published-trips";
 import type { Person, Plan } from "./station-community";
 type Connection = {
   id: string;
@@ -28,7 +29,7 @@ type Member = { id: string; plan_id: string; user_id: string; status: string };
 export function Community() {
   const [user, setUser] = useState<User | null>(null);
   const [loaded, setLoaded] = useState(!supabase);
-  const [tab, setTab] = useState("viajes");
+  const [tab, setTab] = useState("publicados");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -195,6 +196,7 @@ export function Community() {
       </div>
       <div className="tabs">
         {[
+          ["publicados", "Viajes publicados"],
           ["viajes", "Mis viajes"],
           ["conexiones", "Conexiones"],
           ["planes", "Mis planes"],
@@ -214,6 +216,7 @@ export function Community() {
           {message}
         </p>
       )}
+      {tab === "publicados" && <PublishedTrips userId={user.id} />}
       {tab === "viajes" && (
         <>
           <div className="section-heading">
