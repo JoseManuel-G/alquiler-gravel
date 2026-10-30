@@ -189,6 +189,10 @@ export function Community() {
   const accepted = connections.filter((c) => c.status === "accepted");
   return (
     <section className="container community-workspace">
+      <div className="section-heading">
+        <div><p className="kicker">TU COMUNIDAD</p><h1>Tu próxima escapada empieza aquí</h1><p className="muted">Elige una estación para buscar compañía o publicar cuándo vas.</p></div>
+        <div className="inline-actions"><Link href="/?action=search#estaciones" className="button button-dark">Buscar compañeros</Link><Link href="/?action=publish#estaciones" className="button button-coral">Publicar un viaje</Link></div>
+      </div>
       <div className="tabs">
         {[
           ["viajes", "Mis viajes"],
@@ -214,8 +218,8 @@ export function Community() {
         <>
           <div className="section-heading">
             <h2>Tu próximo destino.</h2>
-            <Link href="/#estaciones" className="button button-dark">
-              Preparar otro viaje
+            <Link href="/?action=publish#estaciones" className="button button-dark">
+              Publicar un viaje
             </Link>
           </div>
           {trips.length ? (
@@ -229,7 +233,7 @@ export function Community() {
                   <div className="inline-actions">
                     <Link
                       className="button button-light"
-                      href={`/estaciones/${t.resorts?.slug}?from=${t.starts_on}#companeros`}
+                      href={`/estaciones/${t.resorts?.slug}?from=${t.starts_on}&to=${t.ends_on}#companeros`}
                     >
                       Buscar compañeros
                     </Link>

@@ -34,6 +34,7 @@ export function Search({ resorts }: { resorts: Resort[] }) {
         <span>
           <b>¿Dónde quieres esquiar?</b>
           <select
+            required
             aria-label="Estación"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
@@ -77,7 +78,7 @@ export function Search({ resorts }: { resorts: Resort[] }) {
         </span>
       </label>
       <button className="search-button" aria-label="Buscar compañeros">
-        <ArrowRight />
+        Buscar <ArrowRight />
       </button>
     </form>
   );

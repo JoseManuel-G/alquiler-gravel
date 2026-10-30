@@ -14,7 +14,9 @@ import {
 import { getResorts } from "@/lib/catalog";
 import { Search } from "@/components/search";
 export const dynamic = "force-dynamic";
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ action?: string }> }) {
+  const { action } = await searchParams;
+  const intent = action === "publish" ? "publish" : "search";
   const { resorts, demo, error } = await getResorts();
   return (
     <main>
@@ -83,13 +85,13 @@ export default async function Home() {
           <div>
             <p className="kicker">EL PRIMER PASO ES ELEGIR DESTINO</p>
             <h2>
-              Tu próxima aventura
+              {intent === "publish" ? "¿Dónde vas a esquiar?" : "Tu próxima aventura"}
               <br className="mobile-only" /> empieza aquí
               <span className="coral">.</span>
             </h2>
           </div>
           <p>
-            Tres destinos. Infinitas formas de vivirlos.
+            {intent === "publish" ? "1. Elige estación · 2. Indica fechas · 3. Publica tu viaje" : "Elige una estación y busca quién coincide contigo."}
             <br />
             Encuentra tu montaña. Y después, tu gente.
           </p>
@@ -109,7 +111,7 @@ export default async function Home() {
         <div className="resort-grid">
           {resorts.map((r, i) => (
             <Link
-              href={`/estaciones/${r.slug}`}
+              href={`/estaciones/${r.slug}?action=${intent}#companeros`}
               key={r.id}
               className="resort-card"
             >

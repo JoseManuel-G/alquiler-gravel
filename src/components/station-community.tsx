@@ -42,7 +42,9 @@ export function StationCommunity({
 }) {
   const params = useSearchParams();
   const [from, setFrom] = useState(params.get("from") || "");
-  const [to, setTo] = useState("");
+  const [to, setTo] = useState(params.get("to") || params.get("from") || "");
+  const [intent, setIntent] = useState(params.get("action") === "publish" ? "publish" : "search");
+  const [published, setPublished] = useState(false);
   const [level, setLevel] = useState(params.get("level") || "");
   const [user, setUser] = useState<User | null>(null);
   const [people, setPeople] = useState<
@@ -83,10 +85,21 @@ export function StationCommunity({
       );
       return false;
     }
+    if ((Date.parse(to) - Date.parse(from)) / 86400000 > 90) {
+      setMessage("El viaje puede durar como máximo 90 días.");
+      return false;
+    }
     if (from < new Date().toLocaleDateString("en-CA")) {
       setMessage("Elige fechas actuales o futuras.");
       return false;
     }
+    return true;
+  }
+  async function profileReady() {
+    if (!supabase || !user) return false;
+    const { data, error } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+    if (error) { setMessage("No se pudo comprobar tu perfil. Vuelve a intentarlo."); return false; }
+    if (!data) { setMessage("Completa y guarda tu perfil en Mi cuenta antes de buscar compañeros o publicar viajes."); return false; }
     return true;
   }
   async function search(e: FormEvent) {
@@ -100,6 +113,7 @@ export function StationCommunity({
     }
     setBusy(true);
     setMessage("");
+    if (!(await profileReady())) { setBusy(false); return; }
     const { data: trips, error } = await supabase
       .from("trips")
       .select("user_id,starts_on,ends_on")
@@ -139,6 +153,8 @@ export function StationCommunity({
   async function saveTrip() {
     if (!validDates() || !supabase || !user) return;
     setBusy(true);
+    setMessage("");
+    if (!(await profileReady())) { setBusy(false); return; }
     const { error } = await supabase
       .from("trips")
       .upsert(
@@ -148,6 +164,7 @@ export function StationCommunity({
           ignoreDuplicates: true,
         },
       );
+    setPublished(!error);
     setMessage(
       error
         ? "No se pudo guardar. Completa primero tu perfil y verifica tu email. " +
@@ -218,10 +235,9 @@ export function StationCommunity({
     <>
       <section className="workspace-section" id="companeros">
         <p className="kicker">EL DESTINO YA LO TIENES</p>
-        <h2>¿Con quién vas a esquiar?</h2>
+        <h2>Busca compañía o publica tu viaje</h2>
         <p className="muted">
-          Elige tus fechas y encuentra personas que coincidan contigo en la
-          montaña.
+          Buscar te muestra quién va a esta estación. Publicar hace que otras personas puedan encontrarte. Son dos acciones independientes.
         </p>
         {(!user || demo) && (
           <div className="notice">
@@ -233,7 +249,17 @@ export function StationCommunity({
             </Link>
           </div>
         )}
-        <form className="filters" onSubmit={search}>
+        <div className="trip-intents" aria-label="¿Qué quieres hacer?">
+          <button type="button" aria-pressed={intent === "search"} className={intent === "search" ? "trip-intent selected" : "trip-intent"} onClick={() => { setIntent("search"); setMessage(""); }}>
+            <Users size={24} /><strong>Buscar compañeros</strong><span>Descubre quién coincide contigo y envía una solicitud.</span>
+          </button>
+          <button type="button" aria-pressed={intent === "publish"} className={intent === "publish" ? "trip-intent selected" : "trip-intent"} onClick={() => { setIntent("publish"); setMessage(""); }}>
+            <CalendarDays size={24} /><strong>Publicar mi viaje</strong><span>Comparte cuándo vas para que puedan encontrarte.</span>
+          </button>
+        </div>
+        <h3>{intent === "search" ? "¿Qué días quieres encontrar compañía?" : "¿Cuándo vas a esta estación?"}</h3>
+        <p className="muted">Puedes elegir el mismo día de inicio y fin para una escapada de un día.</p>
+        <form className="filters" onSubmit={(e) => { if (intent === "publish") { e.preventDefault(); void saveTrip(); } else void search(e); }}>
           <label className="field">
             Desde
             <input
@@ -241,7 +267,7 @@ export function StationCommunity({
               required
               value={from}
               min={new Date().toLocaleDateString("en-CA")}
-              onChange={(e) => setFrom(e.target.value)}
+              onChange={(e) => { setFrom(e.target.value); if (!to || to < e.target.value) setTo(e.target.value); setSearched(false); setPublished(false); }}
             />
           </label>
           <label className="field">
@@ -251,10 +277,10 @@ export function StationCommunity({
               required
               value={to}
               min={from || new Date().toLocaleDateString("en-CA")}
-              onChange={(e) => setTo(e.target.value)}
+              onChange={(e) => { setTo(e.target.value); setSearched(false); setPublished(false); }}
             />
           </label>
-          <label className="field">
+          {intent === "search" && <label className="field">
             Nivel
             <select aria-label="Nivel" value={level} onChange={(e) => setLevel(e.target.value)}>
               <option value="">Todos los niveles</option>
@@ -264,26 +290,19 @@ export function StationCommunity({
                 ),
               )}
             </select>
-          </label>
-          <button disabled={busy} className="button button-dark">
-            {busy ? "Buscando…" : "Buscar compañeros"} <ArrowRight size={16} />
+          </label>}
+          <button disabled={busy || !user || demo} className="button button-dark">
+            {busy ? "Un momento…" : intent === "publish" ? "Publicar mi viaje" : "Buscar compañeros"} <ArrowRight size={16} />
           </button>
         </form>
-        {user && !demo && (
-          <button
-            disabled={busy}
-            className="button button-outline"
-            onClick={saveTrip}
-          >
-            <CalendarDays size={16} /> Publicar mi viaje en estas fechas
-          </button>
-        )}
+        {intent === "publish" && <p className="muted">Al publicar se compartirán tu perfil, esta estación y las fechas con los miembros. No se envían solicitudes automáticamente.</p>}
+        {published && <div className="session-notice" role="status"><div><strong>¡Tu viaje ya está publicado!</strong><p>Ya pueden encontrarte para estas fechas.</p><Link href="/comunidad" className="button button-light">Ver y gestionar mi viaje</Link><button className="text-button" type="button" onClick={() => { setIntent("search"); setMessage(""); }}>Buscar compañeros ahora →</button></div></div>}
         {message && (
           <p className="notice" role="status">
             {message}
           </p>
         )}
-        <div style={{ marginTop: 24 }}>
+        {intent === "search" && <div style={{ marginTop: 24 }}>
           {people.length ? (
             <div className="people-grid">
               {people.map((p) => (
@@ -336,6 +355,7 @@ export function StationCommunity({
                   ? "Todavía no hay compañeros que coincidan con esta búsqueda. Publica tu viaje, prueba otras fechas o invita a tus amigos."
                   : "Busca por fechas para descubrir a los compañeros que estarán en esta estación. Tú decides con quién conectar."}
               </p>
+              {user && searched && <button type="button" className="button button-coral" onClick={() => setIntent("publish")}>Publicar mi viaje para que me encuentren</button>}
               <Link
                 href={user ? "/comunidad" : "/cuenta"}
                 className="button button-light"
@@ -345,7 +365,7 @@ export function StationCommunity({
               </Link>
             </div>
           )}
-        </div>
+        </div>}
       </section>
       <section className="workspace-section" id="planes">
         <div className="section-heading">
