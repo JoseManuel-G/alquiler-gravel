@@ -2081,3 +2081,9 @@ h2 {
 .trip-intent:focus-visible { outline: 3px solid #ff695d; outline-offset: 3px; }
 .search-button { width: auto; min-width: 100px; gap: 8px; padding: 0 18px; }
 @media (max-width: 600px) { .trip-intents { grid-template-columns: 1fr; } .trip-intent { padding: 16px; } }
+
+.profile-heading { display: flex; gap: 20px; align-items: center; margin: 20px 0; }
+.profile-heading h1 { margin: 0; overflow-wrap: anywhere; }
+.profile-heading > div:last-child { min-width: 0; }
+.profile-heading p { margin: 6px 0; }
+#profile-photo { scroll-margin-top: 120px; }

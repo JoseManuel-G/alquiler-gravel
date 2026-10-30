@@ -202,7 +202,10 @@ export function Account() {
         {user && mode !== "new-password" ? (
           <>
             <p className="kicker">TU ESPACIO EN LA MONTAÑA</p>
-            <h1>Mi perfil</h1>
+            <div className="profile-heading">
+              {photoPreview || avatar ? <Image key={photoPreview || avatar} src={photoPreview || avatar} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Todavía no tienes foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
+              <div><h1>{name.trim() || "Mi perfil"}</h1><p className="muted">Tu perfil en SKI MATCH</p><a href="#profile-photo" className="text-button">{avatar || photoFile ? "Cambiar mi foto" : "Añadir mi foto"}</a></div>
+            </div>
             <div className="session-notice" role="status"><ShieldCheck size={20} /><div><strong>Has iniciado sesión</strong><br /><span>{user.email}</span></div></div>
             <form className="form-stack" onSubmit={save}>
               <label className="field">
@@ -274,7 +277,7 @@ export function Account() {
                 {photoPreview || avatar ? <Image key={photoPreview || avatar} src={photoPreview || avatar} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Sin foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
                 <label className="field">
                   Foto de perfil
-                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} disabled={busy} aria-describedby="photo-help" />
+                  <input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} disabled={busy} aria-describedby="photo-help" />
                   <small id="photo-help">Elige una foto · JPG, PNG o WebP · Máximo 5 MB. Se subirá al guardar el perfil.</small>
                 </label>
                 {(avatar || photoFile) && <button type="button" className="text-button" disabled={busy} onClick={() => { setAvatar(""); setPhotoFile(null); setPhotoPreview(""); }}>Quitar foto</button>}
