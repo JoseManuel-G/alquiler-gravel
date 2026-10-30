@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Photo from "./photo";
+import { PersonGallery } from "./photo-album";
 import { supabase } from "@/lib/supabase";
 import type { Person } from "./station-community";
 
@@ -46,7 +46,7 @@ export function People({ userId, onTrips }: { userId: string; onTrips: (person: 
     </div>
     {loading ? <p role="status">Cargando personas…</p> : error ? <div className="notice" role="alert"><p>{error}</p><Link href="/cuenta" className="text-button">Ir a mi perfil</Link><button className="text-button" onClick={() => setRetry(r => r + 1)}>Reintentar</button></div> : <>
       <div className="people-grid">{people.map(p => <article className="person-card" key={p.id}>
-        {p.avatar_url ? <Photo key={p.avatar_url} src={p.avatar_url} width={96} height={96} alt={`Foto de ${p.name}`} className="member-portrait" /> : <div className="photo-placeholder" aria-label="Sin foto">{p.name.charAt(0).toUpperCase()}</div>}
+        <PersonGallery userId={p.id} avatar={p.avatar_url} name={p.name} />
         <h3>{p.name}, {p.age}</h3><div className="chips"><span>{p.level}</span><span>{p.sport}</span></div>
         <p>{p.bio || "Todavía no ha añadido una presentación."}</p>{p.preferences && <p><strong>Le gusta:</strong> {p.preferences}</p>}
         <button className="button button-dark" onClick={() => onTrips(p)}>Ver sus viajes</button>

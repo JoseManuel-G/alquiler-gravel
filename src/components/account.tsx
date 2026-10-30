@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { AlbumEditor } from "./photo-album";
 import Image from "@/components/photo";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
@@ -18,6 +19,7 @@ export function Account() {
   const [sport, setSport] = useState("Esquí");
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [hasProfile, setHasProfile] = useState(false);
   const [savedAvatar, setSavedAvatar] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
@@ -53,6 +55,7 @@ export function Account() {
             "No se pudo cargar tu perfil. Comprueba que se ha instalado el esquema de Supabase.",
           );
         if (data) {
+          setHasProfile(true);
           setName(data.name);
           setBirth(data.birth_date || "");
           setLevel(data.level);
@@ -154,6 +157,7 @@ export function Account() {
         await supabase.storage.from("avatars").remove([savedAvatar.slice(prefix.length)]);
       setAvatar(nextAvatar);
       setSavedAvatar(nextAvatar);
+      setHasProfile(true);
       setPhotoFile(null);
       setPhotoPreview("");
       window.dispatchEvent(new Event("ski-profile-updated"));
@@ -275,11 +279,12 @@ export function Account() {
               </label>
               <div className="photo-editor">
                 {photoPreview || avatar ? <Image key={photoPreview || avatar} src={photoPreview || avatar} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Sin foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
-                <label className="field">
-                  Foto de perfil
+                <div className="field">
+                  <label htmlFor="profile-photo">Elegir foto de perfil de mi galería</label>
                   <input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} disabled={busy} aria-describedby="photo-help" />
+                  <span>O hacer una foto</span><input aria-label="Hacer una foto de perfil" type="file" accept="image/jpeg,image/png,image/webp" capture="user" onChange={choosePhoto} disabled={busy} />
                   <small id="photo-help">Elige una foto · JPG, PNG o WebP · Máximo 5 MB. Se subirá al guardar el perfil.</small>
-                </label>
+                </div>
                 {(avatar || photoFile) && <button type="button" className="text-button" disabled={busy} onClick={() => { setAvatar(""); setPhotoFile(null); setPhotoPreview(""); }}>Quitar foto</button>}
               </div>
               <p className="muted">
@@ -292,6 +297,7 @@ export function Account() {
                 <ArrowRight size={16} />
               </button>
             </form>
+            <AlbumEditor key={user.id} userId={user.id} enabled={hasProfile} />
             <div className="inline-actions" style={{ marginTop: 20 }}>
               <Link href="/comunidad" className="button button-light">
                 Ir a la comunidad

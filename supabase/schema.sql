@@ -31,6 +31,9 @@ create view public.public_profiles with (security_barrier=true) as
 create table public.trips (
  id uuid primary key default gen_random_uuid(), user_id uuid not null references public.profiles(id) on delete cascade,
  resort_id uuid not null references public.resorts(id) on delete cascade,
+ traveling_with text not null default 'Solo/a' check(traveling_with in ('Solo/a','Con amigos','En pareja','En familia')),
+ party_size integer not null default 1 check(party_size between 1 and 30),
+ looking_for text not null default '' check(length(looking_for)<=160),
  starts_on date not null, ends_on date not null, created_at timestamptz not null default now(),
  check(ends_on>=starts_on and ends_on<=starts_on+90), unique(user_id,resort_id,starts_on,ends_on)
 );

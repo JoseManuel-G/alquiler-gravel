@@ -19,6 +19,9 @@ type Trip = {
   id: string;
   starts_on: string;
   ends_on: string;
+  traveling_with?: string;
+  party_size?: number;
+  looking_for?: string;
   resort_id: string;
   resorts: { name: string; slug: string } | null;
 };
@@ -61,7 +64,7 @@ export function Community({ initialView = "inicio" }: { initialView?: string }) 
     const [t, c, p, m] = await Promise.all([
       supabase
         .from("trips")
-        .select("id,starts_on,ends_on,resort_id,resorts(name,slug)")
+        .select("*,resorts(name,slug)")
         .eq("user_id", user.id)
         .order("starts_on"),
       supabase
@@ -221,6 +224,8 @@ export function Community({ initialView = "inicio" }: { initialView?: string }) 
               {trips.map((t) => (
                 <article key={t.id} className="plan-card">
                   <h3>{t.resorts?.name || "Estación"}</h3>
+                  <p>{t.traveling_with || "Solo/a"}{(t.party_size || 1) > 1 ? ` · ${t.party_size} personas` : ""}</p>
+                  {t.looking_for && <p>Buscamos: {t.looking_for}</p>}
                   <p>
                     {t.starts_on} → {t.ends_on}
                   </p>

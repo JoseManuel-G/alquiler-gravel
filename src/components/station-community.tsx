@@ -45,6 +45,9 @@ export function StationCommunity({
   const [to, setTo] = useState(params.get("to") || params.get("from") || "");
   const [intent, setIntent] = useState(params.get("action") === "publish" ? "publish" : "search");
   const [published, setPublished] = useState(false);
+  const [travelingWith, setTravelingWith] = useState("Solo/a");
+  const [partySize, setPartySize] = useState(1);
+  const [lookingFor, setLookingFor] = useState("");
   const [level, setLevel] = useState(params.get("level") || "");
   const [user, setUser] = useState<User | null>(null);
   const [people, setPeople] = useState<
@@ -158,16 +161,16 @@ export function StationCommunity({
     const { error } = await supabase
       .from("trips")
       .upsert(
-        { user_id: user.id, resort_id: resortId, starts_on: from, ends_on: to },
+        { user_id: user.id, resort_id: resortId, starts_on: from, ends_on: to, traveling_with: travelingWith, party_size: partySize, looking_for: lookingFor.trim() },
         {
           onConflict: "user_id,resort_id,starts_on,ends_on",
-          ignoreDuplicates: true,
+          ignoreDuplicates: false,
         },
       );
     setPublished(!error);
     setMessage(
       error
-        ? "No se pudo guardar. Completa primero tu perfil y verifica tu email. " +
+        ? error.code === "PGRST204" ? "Falta activar los datos de grupo: ejecuta trip-groups.sql en el Supabase de SKI MATCH." : "No se pudo guardar. Completa primero tu perfil y verifica tu email. " +
             error.message
         : "Viaje guardado. Ya pueden encontrarte en estas fechas.",
     );
@@ -291,6 +294,9 @@ export function StationCommunity({
               )}
             </select>
           </label>}
+          {intent === "publish" && <div className="trip-group-fields"><label className="field">¿Con quién vas?<select value={travelingWith} onChange={e => { const value = e.target.value; setTravelingWith(value); setPartySize(value === "Solo/a" ? 1 : Math.max(2, partySize)); setPublished(false); }}>{["Solo/a", "Con amigos", "En pareja", "En familia"].map(v => <option key={v}>{v}</option>)}</select></label>
+          {travelingWith !== "Solo/a" && <label className="field">¿Cuántos vais, incluyéndote?<input type="number" min={2} max={30} required value={partySize} onChange={e => { setPartySize(Number(e.target.value)); setPublished(false); }} /></label>}
+          <label className="field">¿Qué compañía buscáis? · opcional<input maxLength={160} value={lookingFor} onChange={e => { setLookingFor(e.target.value); setPublished(false); }} placeholder="Por ejemplo: un grupo de amigas para esquiar y tomar algo" /><small>Describe el ambiente o el grupo que os gustaría conocer. Evita poner teléfonos u otros datos privados.</small></label></div>}
           <button disabled={busy || !user || demo} className="button button-dark">
             {busy ? "Un momento…" : intent === "publish" ? "Publicar mi viaje" : "Buscar compañeros"} <ArrowRight size={16} />
           </button>

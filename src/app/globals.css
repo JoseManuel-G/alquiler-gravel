@@ -2112,3 +2112,26 @@ h2 {
 .travel-body small { font-size: 11px; color: #718392; }
 .member-portrait { width: 100%; height: 220px; object-fit: cover; border-radius: 14px; }
 @media(max-width: 600px) { .start-grid { grid-template-columns: 1fr; gap: 12px; } .start-card { padding: 22px; } .community-start { padding-top: 24px; } }
+
+.person-gallery { position: relative; height: 310px; width: 100%; overflow: hidden; border-radius: 14px; background: #eaf1f6; }
+.person-gallery .gallery-image { object-fit: cover; }
+.travel-cover { height: 310px; }
+.travel-cover .person-gallery { height: 100%; border-radius: 0; }
+.gallery-count { position: absolute; top: 12px; right: 12px; padding: 5px 10px; border-radius: 20px; color: white; background: #102a43db; font-size: 13px; }
+.gallery-warning { top: auto; bottom: 8px; font-size: 11px; }
+.gallery-arrow { position: absolute; top: 42%; display: grid; place-items: center; width: 38px; height: 44px; border: 0; border-radius: 22px; background: #fffffff0; color: #102a43; cursor: pointer; }
+.gallery-arrow.previous { left: 10px; }.gallery-arrow.next { right: 10px; }
+.travel-destination { pointer-events: none; }
+.album-empty { min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #eaf1f6; border-radius: 14px; font-size: 64px; }
+.album-empty span { font-size: 14px; }
+.album-editor { border-top: 1px solid #d5e1e8; margin-top: 32px; padding-top: 24px; }
+.album-thumbnails { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.album-thumbnails img { width: 110px; height: 110px; object-fit: cover; border-radius: 12px; }
+.album-thumbnails > div { display: flex; flex-direction: column; gap: 8px; }
+.trip-group-fields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 20px; background: #f0f5f8; border-radius: 16px; }
+.trip-group-fields .field:last-child { grid-column: 1 / -1; }
+.trip-group-fields small { font-weight: 400; line-height: 1.5; }
+.trip-looking-for { padding: 14px; background: #f0f5f8; border-radius: 12px; }
+@media (max-width: 600px) { .trip-group-fields { grid-template-columns: 1fr; } }
+
+.trip-group-fields { flex-basis: 100%; width: 100%; }
