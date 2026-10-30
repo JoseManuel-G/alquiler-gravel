@@ -1,21 +1,34 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Header, Footer } from "@/components/shell";
 import "./globals.css";
-
-const siteUrl = "https://j2data.ai";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: "J² Data & AI | Estrategia, plataformas de datos, analítica e IA",
-  description: "Consultoría boutique de datos e IA: estrategia, arquitecturas lakehouse y data warehouse, Snowflake, Microsoft Fabric, Power BI y agentes inteligentes.",
-  keywords: ["consultoría de datos", "estrategia de datos", "lakehouse", "data warehouse", "Snowflake", "Microsoft Fabric", "Power BI", "modelos semánticos", "agentes IA"],
-  openGraph: {
-    type: "website", locale: "es_ES", url: siteUrl, siteName: "J² Data & AI",
-    title: "J² Data & AI | Datos que deciden",
-    description: "Estrategia, plataformas, analítica e IA para convertir datos complejos en mejores decisiones.",
+  title: {
+    default: "Ski Match — La montaña se disfruta en compañía",
+    template: "%s | Ski Match",
   },
+  description:
+    "Descubre Baqueira Beret, Formigal-Panticosa y Sierra Nevada. Conecta con compañeros de esquí y snowboard de tu nivel y organiza tu próxima escapada.",
+  applicationName: "Ski Match",
   robots: { index: true, follow: true },
+  openGraph: {
+    title: "Ski Match — Nos vemos arriba",
+    description: "Tu próxima montaña. Tu próxima aventura. Tu gente.",
+    type: "website",
+    locale: "es_ES",
+  },
 };
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es"><body>{children}</body></html>;
+export const viewport: Viewport = { themeColor: "#102a43" };
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es">
+      <body>
+        <a className="skip-link" href="#contenido">
+          Saltar al contenido
+        </a>
+        <Header />
+        <div id="contenido">{children}</div>
+        <Footer />
+      </body>
+    </html>
+  );
 }

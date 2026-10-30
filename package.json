@@ -1,28 +1,32 @@
 {
-  "name": "j2-data-ai",
+  "name": "ski-match",
   "version": "1.0.0",
   "private": true,
-  "description": "Web corporativa de J² Data & AI",
+  "description": "Comunidad de esquí y snowboard — destinos, viajes, conexiones y planes",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest"
+    "@supabase/supabase-js": "2.118.0",
+    "lucide-react": "1.65.0",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "latest",
-    "@tailwindcss/postcss": "latest",
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "eslint": "latest",
-    "eslint-config-next": "latest",
-    "tailwindcss": "latest",
-    "typescript": "latest"
+    "@electric-sql/pglite": "0.5.13",
+    "@eslint/eslintrc": "3.3.7",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3"
   }
 }

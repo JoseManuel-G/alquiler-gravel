@@ -1,201 +1,288 @@
 import Link from "next/link";
-
-const services = [
-  {
-    number: "01",
-    title: "Estrategia & arquitectura",
-    description:
-      "Diseñamos la hoja de ruta, el gobierno y la arquitectura que conectan cada fuente de datos con objetivos reales de negocio.",
-    tags: ["Data Strategy", "Gobierno", "Cloud"],
-  },
-  {
-    number: "02",
-    title: "Plataformas de datos",
-    description:
-      "Construimos plataformas modernas para ingerir, transformar y servir datos fiables, desde el origen hasta cada equipo consumidor.",
-    tags: ["Lakehouse", "Data Warehouse", "Snowflake", "Microsoft Fabric"],
-  },
-  {
-    number: "03",
-    title: "Analítica & modelos semánticos",
-    description:
-      "Creamos una capa común de métricas y productos analíticos para que toda la organización decida con el mismo dato.",
-    tags: ["Power BI", "Modelos semánticos", "DAX", "Dashboards"],
-  },
-  {
-    number: "04",
-    title: "IA & agentes",
-    description:
-      "Llevamos la IA al flujo de trabajo con agentes conectados al conocimiento de la empresa, automatización y casos de uso medibles.",
-    tags: ["Agentes", "Copilot", "RAG", "Automatización"],
-  },
-  {
-    number: "05",
-    title: "Rendimiento & evolución",
-    description:
-      "Auditamos y optimizamos modelos, consultas, capacidades y costes para que el ecosistema escale sin perder velocidad ni control.",
-    tags: ["Performance", "FinOps", "Observabilidad", "Optimización"],
-  },
-];
-
-const steps = [
-  ["01", "Entender", "Nos sentamos con tu equipo, aterrizamos el reto y definimos juntos qué significa éxito."],
-  ["02", "Diseñar", "Trazamos una solución pragmática, escalable y alineada con vuestra realidad tecnológica."],
-  ["03", "Construir", "Trabajamos por entregas cortas y visibles. Sin cajas negras, con tu equipo siempre dentro."],
-  ["04", "Transferir", "Documentamos, formamos y acompañamos para que la solución siga creciendo con vosotros."],
-];
-
-const jaimeLinkedIn = "https://www.linkedin.com/in/jaime-p%C3%A9rez-delso/";
-const joseLinkedIn = "https://www.linkedin.com/in/jose-manuel-gonz%C3%A1lez-albaladejo/";
-
-function Arrow({ diagonal = false }: { diagonal?: boolean }) {
-  return <span aria-hidden="true">{diagonal ? "↗" : "→"}</span>;
-}
-
-export default function Home() {
+import Image from "@/components/photo";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  MountainSnow,
+  MapPin,
+  HeartHandshake,
+  Route,
+  Snowflake,
+  Check,
+  MoveDown,
+} from "lucide-react";
+import { getResorts } from "@/lib/catalog";
+import { Search } from "@/components/search";
+export const dynamic = "force-dynamic";
+export default async function Home() {
+  const { resorts, demo, error } = await getResorts();
   return (
     <main>
-      <header className="site-header">
-        <Link href="#inicio" className="brand" aria-label="Jota Data, inicio">
-          <span className="brand-mark">J²</span>
-          <span className="brand-name">Data & AI</span>
-        </Link>
-        <nav className="desktop-nav" aria-label="Navegación principal">
-          <Link href="#servicios">Servicios</Link>
-          <Link href="#nosotros">Nosotros</Link>
-          <Link href="#metodo">Cómo trabajamos</Link>
-        </nav>
-        <Link href="#contacto" className="header-cta">
-          Cuéntanos tu reto <Arrow />
-        </Link>
-      </header>
-
-      <section className="hero" id="inicio">
-        <div className="hero-grid" aria-hidden="true" />
-        <div className="hero-orbit hero-orbit-one" aria-hidden="true" />
-        <div className="hero-orbit hero-orbit-two" aria-hidden="true" />
-        <div className="eyebrow"><span /> Consultoría boutique de datos & IA</div>
-        <h1>
-          Tus datos ya hablan.<br />
-          <em>Hagamos que decidan.</em>
-        </h1>
-        <p className="hero-copy">
-          Convertimos datos dispersos en una ventaja real, desde la <strong>estrategia y la plataforma</strong> hasta la analítica y la inteligencia artificial.
-        </p>
-        <div className="hero-actions">
-          <Link href="#contacto" className="button button-primary">Hablemos de tu proyecto <Arrow /></Link>
-          <Link href="#servicios" className="text-link">Descubre cómo ayudamos <span>↓</span></Link>
+      <section className="hero">
+        <Image
+          className="hero-image"
+          unoptimized
+          src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=2400&q=85"
+          alt="Cumbres nevadas de los Alpes bajo el cielo azul"
+          fill
+          priority
+          sizes="100vw"
+        />
+        <div className="hero-shade" />
+        <div className="container hero-content">
+          <p className="eyebrow">
+            <span /> NUEVAS HUELLAS. NUEVAS CONEXIONES.
+          </p>
+          <h1>
+            La montaña se disfruta
+            <br />
+            más <em>en compañía.</em>
+          </h1>
+          <p className="hero-description">
+            Descubre estaciones de esquí, conecta con personas de tu nivel
+            <br className="desktop-break" /> y comparte experiencias
+            inolvidables en la nieve.
+          </p>
+          <div className="hero-actions">
+            <Link href="#estaciones" className="button button-coral">
+              Explorar estaciones <ArrowUpRight size={18} />
+            </Link>
+            <Link href="#como-funciona" className="hero-secondary">
+              Cómo funciona{" "}
+              <span>
+                <ArrowRight size={16} />
+              </span>
+            </Link>
+          </div>
+          <div className="hero-bottom">
+            <span>
+              <MountainSnow size={17} /> LA MISMA PASIÓN. TU PRÓXIMO PLAN.
+            </span>
+            <span>
+              DESLIZA PARA EXPLORAR <MoveDown size={15} />
+            </span>
+          </div>
         </div>
-        <div className="hero-footer">
-          <span>ESTRATEGIA</span><i />
-          <span>DATA PLATFORMS</span><i />
-          <span>ANALÍTICA</span><i />
-          <span>INTELIGENCIA ARTIFICIAL</span>
+        <div className="search-wrap container">
+          <Search resorts={resorts} />
         </div>
       </section>
-
-      <section className="manifesto section-pad">
-        <p className="section-kicker">Lo que nos mueve</p>
-        <p className="manifesto-copy">
-          No implantamos tecnología por implantar. Creamos ecosistemas de datos que <span>cambian cómo trabaja tu negocio.</span>
-        </p>
-        <div className="manifesto-note">
-          <span className="note-line" />
-          Estrategia y ejecución, en el mismo equipo.
-        </div>
-      </section>
-
-      <section className="services section-pad" id="servicios">
+      <div className="trust-strip container">
+        <span>
+          <Check size={15} /> Compañeros, no citas
+        </span>
+        <span>
+          <Check size={15} /> Todos los niveles, una misma pasión
+        </span>
+        <span>
+          <Check size={15} /> Esquí y snowboard
+        </span>
+      </div>
+      <section id="estaciones" className="section container">
         <div className="section-heading">
           <div>
-            <p className="section-kicker light">En qué podemos ayudarte</p>
-            <h2>De la pregunta<br />al impacto.</h2>
+            <p className="kicker">EL PRIMER PASO ES ELEGIR DESTINO</p>
+            <h2>
+              Tu próxima aventura
+              <br className="mobile-only" /> empieza aquí
+              <span className="coral">.</span>
+            </h2>
           </div>
-          <p>Nos integramos con tu equipo para resolver retos concretos, desde la estrategia hasta el último detalle técnico.</p>
+          <p>
+            Tres destinos. Infinitas formas de vivirlos.
+            <br />
+            Encuentra tu montaña. Y después, tu gente.
+          </p>
         </div>
-        <div className="service-list">
-          {services.map((service) => (
-            <article className="service-card" key={service.title}>
-              <span className="service-number">{service.number}</span>
-              <div>
-                <h3>{service.title}</h3>
-                <p>{service.description}</p>
-                <div className="tags">{service.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
+        {demo && (
+          <p className="catalog-note">
+            Explora el catálogo de lanzamiento · Las conexiones se activan al
+            configurar la comunidad.
+          </p>
+        )}
+        {error && (
+          <p role="alert" className="notice">
+            No podemos cargar las estaciones. Inténtalo de nuevo en unos
+            minutos.
+          </p>
+        )}
+        <div className="resort-grid">
+          {resorts.map((r, i) => (
+            <Link
+              href={`/estaciones/${r.slug}`}
+              key={r.id}
+              className="resort-card"
+            >
+              <div className="resort-photo">
+                <Image
+                  unoptimized
+                  src={r.image}
+                  alt={`Paisaje de montaña para inspirar tu viaje a ${r.name}`}
+                  fill
+                  sizes="(max-width: 700px) 100vw, 33vw"
+                />
+                <span className="photo-tag">
+                  <Snowflake size={12} />
+                  {i === 0
+                    ? "EL VALLE TE ESPERA"
+                    : i === 1
+                      ? "ESPÍRITU AVENTURERO"
+                      : "NIEVE Y LUZ DEL SUR"}
+                </span>
+                <span className="photo-index">0{i + 1} / ESPAÑA</span>
+                <div className="photo-caption">
+                  <MapPin size={13} />
+                  {r.region}
+                </div>
               </div>
-              <span className="service-arrow"><Arrow diagonal /></span>
-            </article>
+              <div className="resort-title">
+                <h3>{r.name}</h3>
+                <span>
+                  <ArrowUpRight size={22} />
+                </span>
+              </div>
+              <p>{r.description}</p>
+              <span className="resort-link">
+                Explorar estación <ArrowRight size={15} />
+              </span>
+            </Link>
           ))}
         </div>
-      </section>
-
-      <section className="team section-pad" id="nosotros">
-        <div className="team-intro">
-          <div>
-            <p className="section-kicker">Quién está detrás</p>
-            <h2>Dos perfiles.<br /><span>Una misma obsesión.</span></h2>
-          </div>
-          <p>Hacer que la tecnología sea útil de verdad. Sin capas innecesarias, sin presentaciones eternas y con una implicación que no se delega.</p>
+        <p className="gallery-note" style={{ marginTop: 18, marginBottom: 0 }}>
+          Fotografías alpinas de inspiración · No representan necesariamente las
+          estaciones anunciadas.
+        </p>
+        <div className="coming-next">
+          <MountainSnow size={19} />
+          <span>El mapa sigue creciendo.</span>
+          <p>Próximamente, más estaciones y nuevas aventuras.</p>
+          <span className="small-pill">ESTO SOLO ACABA DE EMPEZAR</span>
         </div>
-        <div className="team-grid">
-          <article className="person-card person-dark">
-            <div className="person-top">
-              <span className="monogram">JP</span>
-              <a href={jaimeLinkedIn} target="_blank" rel="noreferrer" aria-label="LinkedIn de Jaime Pérez Delso">in</a>
-            </div>
+      </section>
+      <section className="how-section" id="como-funciona">
+        <div className="container">
+          <div className="section-heading">
             <div>
-              <p className="person-role">DATA STRATEGY & BUSINESS INTELLIGENCE</p>
-              <h3>Jaime<br />Pérez Delso</h3>
-              <p className="person-copy">Conecta la visión de negocio con el dato para construir soluciones analíticas que las personas entienden, adoptan y usan.</p>
+              <p className="kicker">ASÍ DE FÁCIL. ASÍ DE BUENO.</p>
+              <h2>De «quiero ir» a «nos vemos arriba».</h2>
+            </div>
+            <span className="handwritten">
+              El mejor plan empieza contigo <ArrowUpRight size={24} />
+            </span>
+          </div>
+          <div className="steps-grid">
+            {[
+              {
+                icon: MapPin,
+                title: "Elige tu estación.",
+                text: "Descubre destinos increíbles y marca las fechas de tu próxima escapada.",
+              },
+              {
+                icon: HeartHandshake,
+                title: "Encuentra tu gente.",
+                text: "Conecta con esquiadores y riders de tu nivel que estarán allí cuando tú.",
+              },
+              {
+                icon: Route,
+                title: "Disfruta de la montaña.",
+                text: "Organiza un plan, comparte la primera bajada y deja que el resto fluya.",
+              },
+            ].map((s, i) => (
+              <article key={s.title}>
+                <div className="step-top">
+                  <span className="step-icon">
+                    <s.icon size={28} strokeWidth={1.5} />
+                  </span>
+                  <span className="step-number">0{i + 1}</span>
+                </div>
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section className="community-section container">
+        <div className="community-copy">
+          <p className="kicker">MISMA NIEVE. BUENA COMPAÑÍA.</p>
+          <h2>
+            Tu gente está
+            <br />
+            ahí fuera.
+            <br />
+            <span>O mejor, ahí arriba.</span>
+          </h2>
+          <p>
+            Da igual si estás aprendiendo a girar o si buscas la primera huella.
+            Hay alguien con tus mismas ganas de montaña.
+          </p>
+          <div className="community-values">
+            <span>
+              <Check size={17} /> Conecta por nivel, fechas y estación
+            </span>
+            <span>
+              <Check size={17} /> Comparte bajadas, no expectativas
+            </span>
+          </div>
+          <Link href="/comunidad" className="button button-dark">
+            Conoce la comunidad <ArrowUpRight size={18} />
+          </Link>
+        </div>
+        <div className="demo-scene">
+          <div className="demo-dots" />
+          <article className="demo-profile">
+            <div className="demo-portrait">
+              <Image
+                unoptimized
+                src="https://images.unsplash.com/photo-1551524164-687a55dd1126?auto=format&fit=crop&w=650&q=85"
+                alt="Esquiadores disfrutando de la montaña"
+                fill
+                sizes="400px"
+              />
+              <span className="demo-label">PERFIL DE DEMOSTRACIÓN</span>
+              <span className="profile-location">
+                <MapPin size={13} /> Baqueira Beret
+              </span>
+            </div>
+            <div className="demo-profile-body">
+              <h3>
+                Alex, 29 <span>⛷</span>
+              </h3>
+              <p>Una bajada más. Siempre.</p>
+              <div className="chips">
+                <span>Intermedio</span>
+                <span>Esquí</span>
+                <span>Après-ski</span>
+              </div>
+              <Link href="/cuenta" className="button button-coral">
+                Encuentra tus compañeros <HeartHandshake size={18} />
+              </Link>
             </div>
           </article>
-          <article className="person-card person-accent">
-            <div className="person-top">
-              <span className="monogram">JG</span>
-              <a href={joseLinkedIn} target="_blank" rel="noreferrer" aria-label="LinkedIn de José Manuel González Albaladejo">in</a>
-            </div>
+          <div className="floating-note">
+            <span>✳</span>
             <div>
-              <p className="person-role">DATA PLATFORMS & ARTIFICIAL INTELLIGENCE</p>
-              <h3>José Manuel<br />González Albaladejo</h3>
-              <p className="person-copy">Convierte la complejidad técnica en arquitecturas y productos de datos sólidos, eficientes y preparados para la IA.</p>
+              La conexión empieza
+              <br />
+              <strong>con una misma pasión.</strong>
             </div>
-          </article>
-        </div>
-        <p className="profile-disclaimer">Conoce la trayectoria completa y actualizada de Jaime y José Manuel en sus perfiles de LinkedIn.</p>
-      </section>
-
-      <section className="method section-pad" id="metodo">
-        <div className="section-heading method-heading">
-          <div>
-            <p className="section-kicker">Nuestra forma de trabajar</p>
-            <h2>Cerca. Claro.<br />Sin sorpresas.</h2>
           </div>
-          <p>Menos ceremonia, más colaboración. Un proceso sencillo para llegar antes a lo que importa.</p>
-        </div>
-        <div className="steps">
-          {steps.map(([number, title, copy]) => (
-            <article key={number}>
-              <span>{number}</span><h3>{title}</h3><p>{copy}</p>
-            </article>
-          ))}
         </div>
       </section>
-
-      <section className="contact section-pad" id="contacto">
-        <div className="contact-glow" aria-hidden="true" />
-        <p className="section-kicker light">¿Tienes un reto entre manos?</p>
-        <h2>Puede que seamos<br />el equipo que buscas.</h2>
-        <p>Cuéntanos dónde estás y a dónde quieres llegar. La primera conversación corre de nuestra cuenta.</p>
-        <div className="contact-links">
-          <a href={jaimeLinkedIn} target="_blank" rel="noreferrer" className="button button-light">Hablar con Jaime <Arrow diagonal /></a>
-          <a href={joseLinkedIn} target="_blank" rel="noreferrer" className="button button-outline">Hablar con José Manuel <Arrow diagonal /></a>
+      <section className="final-cta container">
+        <div>
+          <p className="kicker">EL PRÓXIMO RECUERDO ESTÁ POR HACER</p>
+          <h2>
+            La nieve pone el escenario.
+            <br />
+            Tú eliges la compañía.
+          </h2>
         </div>
+        <Link className="button button-coral" href="/cuenta">
+          Crear mi cuenta <ArrowUpRight size={20} />
+        </Link>
+        <MountainSnow className="cta-mountain" size={230} strokeWidth={0.5} />
       </section>
-
-      <footer>
-        <div className="footer-brand"><span className="brand-mark">J²</span><span>Data & AI</span></div>
-        <p>Data Strategy · Platforms · Analytics · Artificial Intelligence</p>
-        <p>© {new Date().getFullYear()} J² Data & AI</p>
-      </footer>
     </main>
   );
 }
