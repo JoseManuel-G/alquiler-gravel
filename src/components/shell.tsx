@@ -1,142 +1,17 @@
 "use client";
 import Link from "next/link";
-import {
-  MountainSnow,
-  Compass,
-  Users,
-  UserRound,
-  ArrowUpRight,
-  Menu,
-  X,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { MountainSnow, Compass, Users, UserRound, MessagesSquare, Plus, CalendarDays } from "lucide-react";
 import { usePathname } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
-export function Brand() {
-  return (
-    <Link href="/" className="brand" aria-label="Ski Match, inicio">
-      <MountainSnow size={31} strokeWidth={1.6} />
-      <span>
-        ski<span className="brand-light">match</span>
-        <i>®</i>
-      </span>
-    </Link>
-  );
-}
+import { useApp } from "./app-context";
+import Photo from "./photo";
+export function Brand() { return <Link href="/" className="brand" aria-label="SKI MATCH, explorar"><MountainSnow size={30} strokeWidth={1.7} /><span>ski<span className="brand-light">match</span></span></Link>; }
 export function Header() {
-  const [open, setOpen] = useState(false);
-  const path = usePathname();
-  const [user, setUser] = useState<User | null>(null);
-  const [ready, setReady] = useState(!supabase);
-  useEffect(() => {
-    if (!supabase) return;
-    let active = true;
-    void supabase.auth.getUser().then(({ data }) => { if (active) { setUser(data.user); setReady(true); } });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => { setUser(session?.user || null); setReady(true); });
-    return () => { active = false; subscription.unsubscribe(); };
-  }, []);
-  return (
-    <>
-      <header className="header">
-        <div className="container header-inner">
-          <Brand />
-          <nav
-            className={open ? "nav open" : "nav"}
-            aria-label="Navegación principal"
-          >
-            <Link
-              onClick={() => setOpen(false)}
-              className={path === "/" ? "active" : ""}
-              href="/?action=search#estaciones"
-            >
-              Explorar estaciones
-            </Link>
-            <Link onClick={() => setOpen(false)} href="/?action=search#como-funciona">
-              Cómo funciona
-            </Link>
-            <Link
-              onClick={() => setOpen(false)}
-              className={path === "/comunidad" ? "active" : ""}
-              href="/comunidad"
-            >
-              La comunidad
-            </Link>
-          </nav>
-          <Link className="button button-dark header-button" href="/cuenta">
-            {user ? <><span className="session-dot" />Mi perfil · Dentro</> : ready ? <>Iniciar sesión <ArrowUpRight size={16} /></> : "Cargando…"}
-          </Link>
-          <button
-            className="menu-button icon-button"
-            aria-label={open ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={open}
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <X /> : <Menu />}
-          </button>
-        </div>
-      </header>
-      {user && <div className="session-bar"><span className="session-dot" /><span>Sesión iniciada</span><Link href="/cuenta">Mi perfil</Link></div>}
-      <nav className="mobile-bottom" aria-label="Navegación móvil">
-        <Link href="/comunidad">
-          <Compass size={20} />
-          Inicio
-        </Link>
-        <Link href="/comunidad?view=publicados">
-          <Users size={20} />
-          Viajes
-        </Link>
-        <Link href="/cuenta">
-          <UserRound size={20} />
-          {user ? "Mi perfil · Dentro" : "Entrar"}
-        </Link>
-      </nav>
-    </>
-  );
+ const path = usePathname(); const app = useApp();
+ const links = [{href:"/", label:"Explorar", Icon:Compass}, {href:"/viajes", label:"Viajes", Icon:CalendarDays}, {href:"/personas",label:"Personas", Icon:Users}];
+ return <><header className="header sm-header"><div className="container header-inner"><Brand /><nav className="sm-primary" aria-label="Navegación principal">{links.map(({href,label}) => <Link key={href} href={href} aria-current={path===href ? "page" : undefined}>{label}</Link>)}</nav><div className="sm-header-actions"><button className="button button-coral sm-publish" onClick={() => app.publish()}><Plus size={18}/><span>Publicar viaje</span></button><button className="icon-button sm-messages" aria-label="Mensajes y solicitudes" onClick={() => app.social()}><MessagesSquare size={23}/></button>
+ {app.user ? <details className="profile-menu"><summary aria-label="Abrir menú de mi perfil">{app.avatar ? <Photo key={app.avatar} src={app.avatar} width={40} height={40} alt="Mi perfil" /> : <span className="sm-avatar">{app.name.charAt(0).toUpperCase() || <UserRound size={20}/>}</span>}</summary><div><strong>{app.name || "Mi cuenta"}</strong><Link href="/cuenta">Mi perfil y fotos</Link><Link href="/viajes?mine=1">Mis viajes</Link><button onClick={() => app.social("conexiones")}>Solicitudes y conexiones</button><button onClick={() => app.social("planes")}>Mis planes compartidos</button><Link href="/cuenta">Cuenta y cerrar sesión</Link></div></details> : <button disabled={!app.ready} className="icon-button sm-login" aria-label="Iniciar sesión o registrarme" onClick={() => app.requireAuth(() => {})}><UserRound size={22}/></button>}
+ </div></div></header><nav className="mobile-bottom sm-mobile-nav" aria-label="Navegación móvil">{links.map(({href,label,Icon}) => <Link key={href} href={href} aria-current={path===href ? "page" : undefined}><Icon size={21}/>{label}</Link>)}</nav></>;
 }
 export function Footer() {
-  return (
-    <footer className="footer">
-      <div className="container">
-        <div className="footer-top">
-          <div>
-            <Brand />
-            <p>
-              La nieve nos une.
-              <br />
-              La aventura la compartimos.
-            </p>
-          </div>
-          <div>
-            <span>EXPLORA</span>
-            <Link href="/?action=search#estaciones">Estaciones</Link>
-            <Link href="/?action=search#como-funciona">Cómo funciona</Link>
-            <Link href="/comunidad">La comunidad</Link>
-          </div>
-          <div>
-            <span>SKI MATCH</span>
-            <Link href="/info/nosotros">Sobre nosotros</Link>
-            <Link href="/info/contacto">Contacto</Link>
-            <Link href="/info/privacidad">Privacidad</Link>
-            <Link href="/info/condiciones">Condiciones de uso</Link>
-          </div>
-          <div className="footer-note">
-            <MountainSnow size={38} />
-            <p>
-              Menos «a ver si vamos».
-              <br />
-              <strong>Más «nos vemos arriba».</strong>
-            </p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>
-            © {new Date().getFullYear()} Ski Match. Hecho para compartir la
-            montaña.
-          </span>
-          <span>ESPAÑA · 42°41′N 0°56′E</span>
-        </div>
-      </div>
-    </footer>
-  );
+ return <footer className="sm-footer"><div className="container"><div><Brand/><p>Montaña, planes y buena compañía.</p></div><nav aria-label="Información"><Link href="/info/nosotros">Sobre SKI MATCH</Link><Link href="/info/privacidad">Privacidad</Link><Link href="/info/condiciones">Condiciones</Link><Link href="/info/contacto">Contacto</Link></nav><small>© {new Date().getFullYear()} SKI MATCH</small></div></footer>;
 }

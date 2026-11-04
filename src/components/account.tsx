@@ -3,11 +3,13 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { AlbumEditor } from "./photo-album";
 import Image from "@/components/photo";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { LogOut, ArrowRight, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 const levels = ["Principiante", "Intermedio", "Avanzado", "Experto"];
-export function Account() {
+export function Account({ compact = false }: { compact?: boolean }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loaded, setLoaded] = useState(!supabase);
   const [mode, setMode] = useState("login");
@@ -162,6 +164,7 @@ export function Account() {
       setPhotoPreview("");
       window.dispatchEvent(new Event("ski-profile-updated"));
       setMessage("Perfil guardado. ¡Nos vemos arriba!");
+      if (new URLSearchParams(window.location.search).get("return") === "publish") router.push("/viajes?publish=1");
     } catch (error) {
       if (uploadedPath) await supabase.storage.from("avatars").remove([uploadedPath]);
       setMessage(error instanceof Error ? error.message : "No se pudo guardar el perfil.");
@@ -169,7 +172,7 @@ export function Account() {
   }
   if (!loaded) return <p className="loading">Cargando tu cuenta…</p>;
   return (
-    <div className="container account-layout">
+    <div className={compact ? "account-layout compact-account" : "container account-layout"}>
       <aside className="account-visual">
         <Image
           src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=900&q=85"

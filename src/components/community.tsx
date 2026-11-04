@@ -32,7 +32,7 @@ type Message = {
   created_at: string;
 };
 type Member = { id: string; plan_id: string; user_id: string; status: string };
-export function Community({ initialView = "inicio" }: { initialView?: string }) {
+export function Community({ initialView = "inicio", embedded = false, initialPersonId }: { initialView?: string; embedded?: boolean; initialPersonId?: string }) {
   const [user, setUser] = useState<User | null>(null);
   const [loaded, setLoaded] = useState(!supabase);
   const [tab, setTab] = useState(initialView);
@@ -82,6 +82,10 @@ export function Community({ initialView = "inicio" }: { initialView?: string }) 
     }
     setTrips((t.data || []) as unknown as Trip[]);
     setConnections((c.data || []) as Connection[]);
+    if (initialPersonId) {
+      const connection = (c.data || []).find(c => c.status === "accepted" && [c.requester_id,c.recipient_id].includes(initialPersonId));
+      if (connection) { setActive(connection.id); setTab("mensajes"); }
+    }
     const memberships = (m.data || []) as Member[];
     setMembers(memberships);
     setPlans(
@@ -105,7 +109,7 @@ export function Community({ initialView = "inicio" }: { initialView?: string }) 
       if (error) setMessage(error.message);
       else setProfiles((data || []) as Person[]);
     }
-  }, [user]);
+  }, [user, initialPersonId]);
   useEffect(() => {
     const task = setTimeout(() => void load(), 0);
     return () => clearTimeout(task);
@@ -198,7 +202,7 @@ export function Community({ initialView = "inicio" }: { initialView?: string }) 
   const accepted = connections.filter((c) => c.status === "accepted");
   return (
     <section className="container community-workspace">
-      <div className="community-toolbar"><Link href="/comunidad" className="text-button">← Inicio</Link><button className="text-button" onClick={() => setTab("viajes")}>Mis viajes</button><button className="text-button" onClick={() => setTab("conexiones")}>Conexiones{connections.some(c => c.status === "pending" && c.recipient_id === user.id) ? " · Nuevas" : ""}</button><button className="text-button" onClick={() => setTab("mensajes")}>Mensajes</button><button className="text-button" onClick={() => setTab("planes")}>Mis planes</button></div>
+      <div className={embedded ? "community-toolbar embedded-social-nav" : "community-toolbar"}><Link href="/comunidad" className="text-button">← Inicio</Link><button className="text-button" onClick={() => setTab("viajes")}>Mis viajes</button><button className="text-button" onClick={() => setTab("conexiones")}>Conexiones{connections.some(c => c.status === "pending" && c.recipient_id === user.id) ? " · Nuevas" : ""}</button><button className="text-button" onClick={() => setTab("mensajes")}>Mensajes</button><button className="text-button" onClick={() => setTab("planes")}>Mis planes</button></div>
       {tab === "publicar" && <PublishDestination />}
       {message && (
         <p role="status" className="notice">
@@ -215,7 +219,7 @@ export function Community({ initialView = "inicio" }: { initialView?: string }) 
         <>
           <div className="section-heading">
             <h2>Tu próximo destino.</h2>
-            <Link href="/?action=publish#estaciones" className="button button-dark">
+            <Link href="/viajes?publish=1" className="button button-dark">
               Publicar un viaje
             </Link>
           </div>

@@ -47,3 +47,6 @@ export const previewResorts: Resort[] = [
     official_url: "https://sierranevada.es",
   },
 ];
+
+const originalScenery: Record<string,string> = { "baqueira-beret":"photo-1551524164-687a55dd1126", "formigal-panticosa":"photo-1418985991508-e47386d96a71", "sierra-nevada":"photo-1517299321609-52687d1bc55a" };
+export function destinationImage(resort: Resort) { return originalScenery[resort.slug] && resort.image.includes(originalScenery[resort.slug]) ? `/images/destinations/${resort.slug}.jpg` : resort.image; }

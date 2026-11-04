@@ -1,3 +1,16 @@
+# SKI MATCH · Rediseño de noviembre de 2026
+
+La app existente conserva Auth, perfiles/álbum privado, viajes, conexiones, solicitudes, planes y chat. Ahora la entrada pública es **Explorar**, con navegación **Explorar · Viajes · Personas**, destino/fechas compartidos y persistentes, publicación en diálogo, avatar para el perfil y mensajes desde la cabecera.
+
+- Auditoría y mapa de rutas: [docs/REDISENO.md](docs/REDISENO.md).
+- Guía, automatización, costes y pasos de activación: [docs/OCIO-Y-COSTES.md](docs/OCIO-Y-COSTES.md).
+- Proyecto existente: ejecutar **solo** [supabase/redesign-update.sql](supabase/redesign-update.sql) en el Supabase dedicado a SKI MATCH. Es aditivo y repetible. **No repetir `schema.sql`.** El descubrimiento social anterior sigue disponible como compatibilidad hasta aplicar la función nueva. La guía muestra enlaces oficiales si el catálogo aún no está instalado.
+- OpenAI y Cron están **desactivados**. No hay `vercel.json` con tareas programadas. Se requiere aprobación explícita de costes, credenciales de servidor y revisión de permisos de las fuentes antes de activarlos.
+
+Se conservan a continuación las instrucciones de instalación y funcionalidades anteriores; el estado actual del rediseño y sus límites están en los documentos enlazados.
+
+---
+
 # Ski Match
 
 Comunidad para compartir esquí y snowboard. Next.js App Router, React, TypeScript, Tailwind y Supabase. Diseño responsive con navegación inferior en móvil.

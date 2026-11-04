@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { previewResorts, type Resort } from "./resorts";
-export async function getResorts(): Promise<{
+export const getResorts = cache(async function getResorts(): Promise<{
   resorts: Resort[];
   demo: boolean;
   error: boolean;
@@ -19,4 +20,4 @@ export async function getResorts(): Promise<{
     .select("*")
     .order("position");
   return { resorts: (data || []) as Resort[], demo: false, error: !!error };
-}
+});

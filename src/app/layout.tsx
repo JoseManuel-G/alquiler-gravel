@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { AppProvider } from "@/components/app-context";
+import { getResorts } from "@/lib/catalog";
 import { Header, Footer } from "@/components/shell";
 import "./globals.css";
+import "./redesign.css";
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: {
     default: "Ski Match — La montaña se disfruta en compañía",
@@ -18,16 +22,17 @@ export const metadata: Metadata = {
   },
 };
 export const viewport: Viewport = { themeColor: "#102a43" };
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const { resorts, error } = await getResorts();
   return (
     <html lang="es">
       <body>
         <a className="skip-link" href="#contenido">
           Saltar al contenido
         </a>
-        <Header />
+        <AppProvider resorts={resorts} catalogError={error}><Header />
         <div id="contenido">{children}</div>
-        <Footer />
+        <Footer /></AppProvider>
       </body>
     </html>
   );

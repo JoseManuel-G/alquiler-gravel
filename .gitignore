@@ -7,3 +7,6 @@ out/
 .DS_Store
 
 *.tsbuildinfo
+
+# Local audit, browser QA and temporary assets
+work/

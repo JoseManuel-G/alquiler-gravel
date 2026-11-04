@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/leisure?station=baqueira-beret", "schedule": "10 3 * * *" },
+    { "path": "/api/cron/leisure?station=formigal-panticosa", "schedule": "20 3 * * *" },
+    { "path": "/api/cron/leisure?station=sierra-nevada", "schedule": "30 3 * * *" }
+  ]
+}
