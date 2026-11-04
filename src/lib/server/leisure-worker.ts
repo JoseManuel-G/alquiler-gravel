@@ -26,6 +26,10 @@ async function limitedBody(response: Response, limit = 350000) {
  while(true) { const part=await reader.read(); if(part.done) break;size+=part.value.length;if(size>limit) {await reader.cancel();throw new Error("Source exceeds size limit");}text+=decoder.decode(part.value,{stream:true}); }
  return text+decoder.decode();
 }
+function publicWebsite(value: unknown) {
+ if(typeof value !== "string") return null;
+ try {const u=new URL(value);if(u.protocol!=="https:"||u.username||u.password||(u.port&&u.port!=="443")||!u.hostname.includes(".")||/^[\d.:]+$/.test(u.hostname)||/\.(local|internal|localhost)$/.test(u.hostname)) return null;return u.href;}catch{return null;}
+}
 function period(category: string, date: Date) {
  const day=date.toISOString().slice(0,10);
  if(category==="event") return day;
@@ -138,7 +142,7 @@ export async function importRestaurants(slug: string) {
   if(!node.tags?.name || !["node","way","relation"].includes(node.type) || !Number.isInteger(node.id)) continue;
   const source_url=`https://www.openstreetmap.org/${node.type}/${node.id}`;
   const name=String(node.tags.name).slice(0,180);const now=new Date();
-  const item={resort_id:station.data.id,source_key:sourceKey("restaurant",name,source_url),category:"restaurant",name,description:"Restaurante recogido en OpenStreetMap. Confirma horarios y disponibilidad con el establecimiento.",location:[node.tags["addr:street"],node.tags["addr:housenumber"],node.tags["addr:city"]].filter(Boolean).join(", "),latitude:node.lat ?? node.center?.lat ?? null,longitude:node.lon ?? node.center?.lon ?? null,source_url,source_name:"© OpenStreetMap contributors · ODbL",subtype:node.tags.cuisine || null,status:"active",verified_at:now.toISOString(),expires_at:new Date(now.getTime()+30*86400000).toISOString(),evidence:[{url:source_url,license:"https://www.openstreetmap.org/copyright",method:"structured_osm"}]};
+  const item={resort_id:station.data.id,source_key:sourceKey("restaurant",name,source_url),category:"restaurant",name,description:"Restaurante recogido en OpenStreetMap. Confirma horarios y disponibilidad con el establecimiento.",location:[node.tags["addr:street"],node.tags["addr:housenumber"],node.tags["addr:city"]].filter(Boolean).join(", "),latitude:node.lat ?? node.center?.lat ?? null,longitude:node.lon ?? node.center?.lon ?? null,source_url,source_name:"© OpenStreetMap contributors · ODbL",website_url:publicWebsite(node.tags.website || node.tags["contact:website"]),subtype:node.tags.cuisine || null,status:"active",verified_at:now.toISOString(),expires_at:new Date(now.getTime()+30*86400000).toISOString(),evidence:[{url:source_url,license:"https://www.openstreetmap.org/copyright",method:"structured_osm"}]};
   const result=await db.from("leisure_items").upsert(item,{onConflict:"resort_id,source_key"});if(result.error) throw new Error("Cannot import OSM place");saved++;
  }
  return {saved};

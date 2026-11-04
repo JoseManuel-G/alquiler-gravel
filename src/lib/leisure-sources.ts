@@ -13,6 +13,6 @@ export const OFFICIAL_SOURCES: Record<string, { name: string; url: string; agend
 export type LeisureItem = {
  id: string; resort_id: string; category: LeisureCategory; name: string; description: string; location: string;
  latitude: number | null; longitude: number | null; starts_at: string | null; ends_at: string | null;
- source_url: string; source_name: string; booking_url: string | null; image_url: string | null; image_license: string | null;
+ source_url: string; source_name: string; website_url: string | null; booking_url: string | null; image_url: string | null; image_license: string | null;
  verified_at: string; expires_at: string; status: string; subtype: string | null; distance_km: number | null; elevation_m: number | null; difficulty: string | null; winter_status: string;
 };

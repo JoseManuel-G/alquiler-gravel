@@ -61,6 +61,7 @@ create table if not exists public.leisure_items (
  starts_at timestamptz, ends_at timestamptz, check(ends_at is null or (starts_at is not null and ends_at>=starts_at)),
  check(category<>'event' or (starts_at is not null and ends_at is not null)),
  source_url text not null check(source_url like 'https://%'), source_name text not null,
+ website_url text check(website_url is null or website_url like 'https://%'),
  booking_url text check(booking_url is null or booking_url like 'https://%'),
  image_url text check(image_url is null or image_url like 'https://%'), image_license text,
  check(image_url is null or length(coalesce(image_license,''))>0),
@@ -70,6 +71,7 @@ create table if not exists public.leisure_items (
  evidence jsonb not null default '[]', verified_at timestamptz not null default now(), expires_at timestamptz not null default now()+interval '7 days',
  unique(resort_id,source_key)
 );
+alter table public.leisure_items add column if not exists website_url text check(website_url is null or website_url like 'https://%');
 create index if not exists leisure_discovery on public.leisure_items(resort_id,category,status,starts_at);
 alter table public.leisure_items enable row level security;
 revoke all on public.leisure_items from anon,authenticated;
@@ -114,4 +116,5 @@ from (values
 ) as v(slug,key,category,name,description,location,url,source,subtype,distance,elevation,difficulty,winter)
 join public.resorts r on r.slug=v.slug
 on conflict(resort_id,source_key) do nothing;
+update public.leisure_items set website_url='https://wellbourne.es/',latitude=42.70035,longitude=0.87505893863515 where source_key='official-wellbourne' and source_url='https://www.visitvaldaran.com/item/restaurant-wellbourne/';
 commit;

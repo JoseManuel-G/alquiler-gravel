@@ -14,4 +14,5 @@ from (values
 ) as v(slug,key,category,name,description,location,url,source,subtype,distance,elevation,difficulty,winter)
 join public.resorts r on r.slug=v.slug
 on conflict(resort_id,source_key) do nothing;
+update public.leisure_items set website_url='https://wellbourne.es/',latitude=42.70035,longitude=0.87505893863515 where source_key='official-wellbourne' and source_url='https://www.visitvaldaran.com/item/restaurant-wellbourne/';
 commit;
