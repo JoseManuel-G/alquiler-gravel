@@ -22,6 +22,7 @@ export function Account({ compact = false }: { compact?: boolean }) {
   const [sport, setSport] = useState("Esquí");
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [minimumPhotos, setMinimumPhotos] = useState(2);
   const [albumPhotos, setAlbumPhotos] = useState<string[]>([]);
   const [hasProfile, setHasProfile] = useState(false);
   const [savedAvatar, setSavedAvatar] = useState("");
@@ -71,6 +72,7 @@ export function Account({ compact = false }: { compact?: boolean }) {
           setPreferences(data.preferences || "");
         }
       }
+      if (u) { const { data: readiness } = await db.rpc("connection_readiness"); setMinimumPhotos(readiness?.minimum_photos===0?0:2); }
       setLoaded(true);
     };
     void db.auth.getUser().then(({ data }) => load(data.user));
@@ -144,7 +146,7 @@ export function Account({ compact = false }: { compact?: boolean }) {
     setMessage("");
     let uploadedPath: string | null = null;
     try {
-      if (prospectivePhotos<2) throw new Error("Sube al menos dos fotos antes de guardar tu perfil.");
+      if (prospectivePhotos<minimumPhotos) throw new Error("Sube al menos dos fotos antes de guardar tu perfil.");
       let nextAvatar = avatar || albumPhotos[0] || "";
       if (photoFile) {
         const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[photoFile.type];
@@ -294,14 +296,14 @@ export function Account({ compact = false }: { compact?: boolean }) {
                 </div>
                 {(avatar || photoFile) && <button type="button" className="text-button" disabled={busy} onClick={() => { setAvatar(""); setPhotoFile(null); setPhotoPreview(""); }}>Quitar foto</button>}
               </div>
-              <AlbumEditor key={user.id} userId={user.id} enabled={true} portrait={savedAvatar} profileSaved={hasProfile} onPhotosChange={setAlbumPhotos} />
-              <p className="profile-photo-progress" role="status">{prospectivePhotos>=2 ? "✓ Ya tienes las dos fotos necesarias" : `${prospectivePhotos} de 2 fotos · añade ${2-prospectivePhotos} más para completar el perfil`}</p>
+              <AlbumEditor key={user.id} userId={user.id} enabled={true} portrait={savedAvatar} profileSaved={hasProfile} minimumRequired={minimumPhotos} onPhotosChange={setAlbumPhotos} />
+              <p className="profile-photo-progress" role="status">{minimumPhotos===0 ? "Tu cuenta anterior se mantiene: añadir fotos es opcional." : prospectivePhotos>=2 ? "✓ Ya tienes las dos fotos necesarias" : `${prospectivePhotos} de 2 fotos · añade ${2-prospectivePhotos} más para completar el perfil`}</p>
               <p className="muted">
                 Tu nombre, edad, nivel, foto y preferencias son visibles para
                 los miembros verificados. Tu email y fecha de nacimiento no se
                 muestran.
               </p>
-              <button disabled={busy||prospectivePhotos<2} className="button button-coral">
+              <button disabled={busy||prospectivePhotos<minimumPhotos} className="button button-coral">
                 {busy ? "Guardando…" : "Guardar perfil"}{" "}
                 <ArrowRight size={16} />
               </button>

@@ -20,6 +20,8 @@ test('Two uploaded photos are mandatory; only the recipient needs a published tr
   await db.exec(await readFile(new URL('../supabase/schema.sql',import.meta.url),'utf8'));
   await db.exec(`create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(bucket_id text,name text,metadata jsonb,primary key(bucket_id,name));create function storage.foldername(text) returns text[] language sql immutable as $$select (string_to_array($1,'/'))[1:array_length(string_to_array($1,'/'),1)-1]$$;alter table storage.objects enable row level security;grant usage on schema storage to anon,authenticated;grant select,insert,delete on storage.objects to authenticated;`);
   await db.exec(await readFile(new URL('../supabase/avatars.sql',import.meta.url),'utf8'));
+  // This fixture exercises registrations after the photo policy was initialized.
+  await db.exec("create table public.profile_photo_policy(singleton boolean primary key check(singleton),required_from timestamptz not null default clock_timestamp());insert into public.profile_photo_policy(singleton) values(true)");
   const ids=['10000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000005'];
   for(const id of ids)await db.query('insert into auth.users values($1,now())',[id]);
   const profile=async id=>db.query("insert into public.profiles(id,name,birth_date,level,sport) values($1,$2,'1990-01-01','Intermedio','Esquí')",[id,'Skier '+id.slice(-1)]);

@@ -1,6 +1,27 @@
 -- SKI MATCH only. Run after schema.sql and avatars.sql in the dedicated project.
 -- Additive and repeatable: existing profiles, trips and conversations are kept.
 begin;
+-- The first application fixes the boundary once. Reapplying never grants an exemption to later signups.
+create table if not exists public.profile_photo_policy (
+ singleton boolean primary key check(singleton),
+ required_from timestamptz not null default clock_timestamp()
+);
+create table if not exists public.legacy_photo_accounts (
+ user_id uuid primary key references auth.users(id) on delete cascade
+);
+alter table public.profile_photo_policy enable row level security;
+alter table public.legacy_photo_accounts enable row level security;
+revoke all on public.profile_photo_policy,public.legacy_photo_accounts from public,anon,authenticated;
+with first_application as (
+ insert into public.profile_photo_policy(singleton) values(true) on conflict(singleton) do nothing returning singleton
+)
+insert into public.legacy_photo_accounts(user_id) select u.id from auth.users u where exists(select 1 from first_application) on conflict(user_id) do nothing;
+create or replace function public.minimum_profile_photos(person uuid default auth.uid()) returns integer
+language sql stable security definer set search_path='' as $$
+ select case when exists(select 1 from public.legacy_photo_accounts where user_id=person) then 0 else 2 end;
+$$;
+revoke all on function public.minimum_profile_photos(uuid) from public,anon;
+grant execute on function public.minimum_profile_photos(uuid) to authenticated;
 create or replace function public.profile_photo_count(person uuid,portrait text default null) returns integer
 language sql volatile security definer set search_path='' as $$
  select count(distinct o.name)::integer from storage.objects o
@@ -17,7 +38,7 @@ create or replace function public.require_profile_photos() returns trigger
 language plpgsql security definer set search_path='' as $$
 begin
  perform pg_advisory_xact_lock(hashtextextended(new.id::text,4901));
- if public.profile_photo_count(new.id,new.avatar_url)<2 then raise exception 'Sube al menos dos fotos antes de guardar tu perfil.'; end if;
+ if public.profile_photo_count(new.id,new.avatar_url)<public.minimum_profile_photos(new.id) then raise exception 'Sube al menos dos fotos antes de guardar tu perfil.'; end if;
  return new;
 end; $$;
 drop trigger if exists ski_profile_min_photos on public.profiles;
@@ -25,13 +46,13 @@ create trigger ski_profile_min_photos before insert or update on public.profiles
 
 create or replace function public.connection_readiness() returns jsonb
 language sql volatile security definer set search_path='' as $$
- select jsonb_build_object('photo_count',public.profile_photo_count(auth.uid(),(select avatar_url from public.profiles where id=auth.uid())),'has_trip',exists(select 1 from public.trips where user_id=auth.uid() and ends_on>=current_date),'has_profile',public.is_member());
+ select jsonb_build_object('photo_count',public.profile_photo_count(auth.uid(),(select avatar_url from public.profiles where id=auth.uid())),'has_trip',exists(select 1 from public.trips where user_id=auth.uid() and ends_on>=current_date),'has_profile',public.is_member(),'minimum_photos',public.minimum_profile_photos(auth.uid()));
 $$;
 create or replace function public.require_connection_ready() returns void
 language plpgsql security definer set search_path='' as $$
 begin
  if not public.is_member() then raise exception 'Completa tu perfil y verifica tu email antes de conectar.'; end if;
- if public.profile_photo_count(auth.uid(),(select avatar_url from public.profiles where id=auth.uid()))<2 then raise exception 'Sube al menos dos fotos a tu perfil para conectar.'; end if;
+ if public.profile_photo_count(auth.uid(),(select avatar_url from public.profiles where id=auth.uid()))<public.minimum_profile_photos(auth.uid()) then raise exception 'Sube al menos dos fotos a tu perfil para conectar.'; end if;
 end; $$;
 create or replace function public.request_person_connection(target_user uuid,target_trip uuid default null) returns uuid
 language plpgsql security definer set search_path='' as $$
@@ -40,7 +61,7 @@ begin
  perform public.require_connection_ready();
  if target_user=auth.uid() then raise exception 'No puedes conectar contigo mismo.'; end if;
  select p.avatar_url into portrait from public.profiles p join auth.users u on u.id=p.id where p.id=target_user and u.email_confirmed_at is not null and p.birth_date<=(current_date-interval '18 years')::date;
- if not found or public.profile_photo_count(target_user,portrait)<2 then raise exception 'Esta persona todavía no tiene el perfil completo.'; end if;
+ if not found or public.profile_photo_count(target_user,portrait)<public.minimum_profile_photos(target_user) then raise exception 'Esta persona todavía no tiene el perfil completo.'; end if;
  if not exists(select 1 from public.trips where user_id=target_user and ends_on>=current_date and (target_trip is null or id=target_trip)) then raise exception 'Esta persona ya no tiene viajes vigentes publicados.'; end if;
  insert into public.connections(requester_id,recipient_id) values(auth.uid(),target_user) returning id into result;
  return result;
@@ -70,7 +91,7 @@ language sql volatile security invoker set search_path='' as $$
  from public.public_profiles p
  join lateral(select tr.* from public.trips tr where tr.user_id=p.id and tr.ends_on>=current_date order by tr.starts_on,tr.id limit 1)t on true
  join public.resorts r on r.id=t.resort_id
- where public.is_member() and p.id<>auth.uid() and public.profile_photo_count(p.id,p.avatar_url)>=2
+ where public.is_member() and p.id<>auth.uid() and public.profile_photo_count(p.id,p.avatar_url)>=public.minimum_profile_photos(p.id)
  order by t.starts_on,p.name,p.id offset greatest(0,page_offset) limit least(30,greatest(1,page_size));
 $$;
 revoke all on function public.require_profile_photos(),public.require_connection_ready(),public.connection_readiness(),public.request_person_connection(uuid,uuid),public.discover_person_cards(integer,integer) from public,anon;

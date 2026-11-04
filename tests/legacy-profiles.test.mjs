@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+
+test('Existing accounts keep optional photos; new signups require two; reruns cannot grandfather future accounts',async()=>{
+ const db=new PGlite();
+ try{
+  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key,email_confirmed_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;`);
+  await db.exec(await readFile(new URL('../supabase/schema.sql',import.meta.url),'utf8'));
+  await db.exec(`create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(bucket_id text,name text,metadata jsonb,primary key(bucket_id,name));create function storage.foldername(text) returns text[] language sql immutable as $$select (string_to_array($1,'/'))[1:array_length(string_to_array($1,'/'),1)-1]$$;alter table storage.objects enable row level security;grant usage on schema storage to anon,authenticated;grant select,insert,delete on storage.objects to authenticated;`);
+  await db.exec(await readFile(new URL('../supabase/avatars.sql',import.meta.url),'utf8'));
+  const oldA='10000000-0000-0000-0000-000000000001',oldB='10000000-0000-0000-0000-000000000002',oldUnfinished='10000000-0000-0000-0000-000000000003',newUser='10000000-0000-0000-0000-000000000004';
+  await db.query('insert into auth.users values($1,now()),($2,now()),($3,now())',[oldA,oldB,oldUnfinished]);
+  const profile=async(id,name)=>db.query("insert into public.profiles(id,name,birth_date,level,sport) values($1,$2,'1990-01-01','Intermedio','Esquí')",[id,name]);
+  await profile(oldA,'Older sender');await profile(oldB,'Older recipient');
+  const resort=(await db.query('select id from public.resorts limit 1')).rows[0].id;
+  await db.query('insert into public.trips(user_id,resort_id,starts_on,ends_on) values($1,$2,current_date+2,current_date+4)',[oldB,resort]);
+  const migration=await readFile(new URL('../supabase/legacy-profiles.sql',import.meta.url),'utf8');
+  await db.exec(migration);
+  const cutoff=(await db.query('select required_from from public.profile_photo_policy')).rows[0].required_from;
+  assert.equal((await db.query('select user_id from public.legacy_photo_accounts')).rows.length,3);
+  await db.query('insert into auth.users values($1,now())',[newUser]);
+  await db.exec(migration);await db.exec(await readFile(new URL('../supabase/people-cards.sql',import.meta.url),'utf8'));
+  assert.deepEqual((await db.query('select required_from from public.profile_photo_policy')).rows[0].required_from,cutoff);
+  assert.equal((await db.query('select user_id from public.legacy_photo_accounts')).rows.length,3);
+  const as=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
+  await as(oldA);
+  assert.equal((await db.query('select public.minimum_profile_photos() as n')).rows[0].n,0);
+  const readiness=(await db.query('select public.connection_readiness() as r')).rows[0].r;
+  assert.equal(readiness.minimum_photos,0);assert.equal(readiness.photo_count,0);assert.equal(readiness.has_trip,false);
+  await db.query("update public.profiles set bio='Still editable without uploading photos' where id=$1",[oldA]);
+  const cards=(await db.query('select * from public.discover_person_cards()')).rows;
+  assert.equal(cards.length,1);assert.equal(cards[0].id,oldB);
+  assert.ok((await db.query('select public.request_person_connection($1) as id',[oldB])).rows[0].id);
+  await assert.rejects(db.query('select * from public.legacy_photo_accounts'));
+  await assert.rejects(db.query('select * from public.profile_photo_policy'));
+  await assert.rejects(db.query('insert into public.legacy_photo_accounts values($1)',[newUser]));
+  await as(oldUnfinished);await profile(oldUnfinished,'Old signup completing profile later');
+  await as(newUser);
+  assert.equal((await db.query('select public.minimum_profile_photos() as n')).rows[0].n,2);
+  await assert.rejects(profile(newUser,'New signup'),{message:/dos fotos/});
+  await db.query("insert into storage.objects values('avatars',$1,'{\"mimetype\":\"image/jpeg\",\"size\":100}')",[`${newUser}/gallery-one.jpg`]);
+  await assert.rejects(profile(newUser,'New signup'),{message:/dos fotos/});
+  await db.query("insert into storage.objects values('avatars',$1,'{\"mimetype\":\"image/jpeg\",\"size\":100}')",[`${newUser}/gallery-two.jpg`]);
+  await profile(newUser,'New signup');
+  assert.ok((await db.query('select public.request_person_connection($1) as id',[oldB])).rows[0].id);
+  assert.equal((await db.query('select id from public.trips where user_id=$1',[newUser])).rows.length,0);
+ }finally{await db.close();}
+});

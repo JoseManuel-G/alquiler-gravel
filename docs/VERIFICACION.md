@@ -28,3 +28,7 @@ La guía incorpora «Todas las estaciones», que conserva las fechas. Se comprue
 ## Personas con fichas individuales
 
 Pruebas de `people-cards.test.mjs`: perfil con cero/una foto rechazado; dos archivos propios de imagen aceptados; archivos vacíos/huérfanos ajenos al álbum no cuentan; si se borran o invalidan archivos por otra vía, no se puede guardar el perfil ni enviar solicitudes con menos de dos; migración repetida conserva perfiles antiguos; destinatarios sin viaje vigente no aparecen ni admiten solicitudes; el solicitante sin viaje propio sí puede conectar con un destinatario con viaje; chat bloqueado hasta aceptación; reejecutar migraciones anteriores actualizadas mantiene los controles. La comprobación real en Storage queda pendiente de ejecutar `people-cards.sql` con credenciales del propietario.
+
+## Compatibilidad de cuentas ya registradas
+
+La corrección captura una sola vez los identificadores de Auth existentes en una tabla privada con RLS. Se comprueban cuentas antiguas sin fotos que pueden editar perfil, aparecer con viaje vigente y conectar; cuentas antiguas que completan su perfil más tarde; altas nuevas que siguen bloqueadas con cero/una foto y funcionan con dos; repetición de las migraciones sin ampliar la exención ni mover el instante inicial; denegación de lectura/escritura de la lista de exentos desde una sesión normal. Las fotos y registros existentes no se alteran.
