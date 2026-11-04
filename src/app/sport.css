@@ -1,0 +1,71 @@
+/* SKI MATCH: alpine sports, clear actions, accessible contrast. */
+:root { --navy:#10253b; --coral:#d8ff43; --muted:#5c6d7e; --paper:#f0f4f8; --border:#dce4ed; }
+body { background:#f6f8fb; color:var(--navy); }
+:focus-visible { outline:3px solid #287cff; outline-offset:4px; }
+.button { border-radius:9px; font-weight:800; letter-spacing:.1px; }
+.button-coral { background:#d8ff43; color:#10253b; }.button-coral:hover { background:#c8ef32; }
+.button-dark { background:#10253b; }.button-dark:hover { background:#193e61; }
+.button-light { background:#e9eff6; color:#10253b; }
+.kicker { color:#516783; font-weight:800; font-size:10px; letter-spacing:2px; }
+.sm-header { background:#0c1c2c; border-bottom:1px solid #ffffff20; height:80px; }
+.sm-header .header-inner { height:80px; }
+.sm-header .brand { color:white; font-weight:900; letter-spacing:-1.2px; }.sm-header .brand-light { font-weight:500; }
+.sm-header .brand > svg { color:#d8ff43; }
+.sm-primary a { color:#b8c7d8; }.sm-primary a[aria-current] { color:white; }.sm-primary a[aria-current]::after { background:#d8ff43; height:4px; }
+.sm-header-actions .icon-button { color:white; }.sm-publish { min-height:43px; }
+.sm-header .sm-avatar { background:#d8ff43; color:#10253b; font-weight:800; }
+.profile-menu > div { color:#10253b; border-color:#dce4ed; }.profile-menu summary:focus-visible { outline-offset:5px; }
+.sm-launch { background:#10253b; color:white; overflow:hidden; }
+.sm-launch .sm-intro { padding-top:52px; padding-bottom:32px; align-items:center; min-height:480px; }
+.sm-hero-copy { position:relative; z-index:1; width:57%; padding:5px 0 12px; }
+.sm-launch .kicker { color:#c1d0df; }
+.sm-intro h1 { font-size:clamp(46px,5.9vw,79px); font-weight:900; font-family:"Arial Black",Arial,Helvetica,sans-serif; font-style:italic; text-transform:uppercase; letter-spacing:-3px; line-height:.99; margin:22px 0; }
+.sm-intro h1 em { color:#d8ff43; font-style:inherit; }
+.sm-intro .sm-hero-copy > p:not(.kicker) { color:#d0deeb; font-size:16px; max-width:420px; line-height:1.7; }
+.sm-sport-label { display:flex; align-items:center; gap:8px; color:#b0c3d7; font-size:9px; font-weight:700; letter-spacing:1.2px; margin-top:26px; }
+.sm-hero-visual { position:absolute; top:0; bottom:0; right:0; width:46%; overflow:hidden; clip-path:polygon(16% 0,100% 0,100% 100%,0 100%); background:#1b3d5b; }
+.sm-hero-visual::after { content:""; position:absolute; inset:65% 0 0; background:linear-gradient(transparent,#10253b9c); pointer-events:none; }
+.sm-hero-visual img { object-fit:cover; opacity:.87; }
+.sm-hero-stamp { position:absolute; right:28px; top:30px; padding:12px 16px; background:#d8ff43; color:#10253b; font-size:14px; font-weight:900; font-style:italic; line-height:1.25; transform:rotate(3deg); }
+.sm-hero-visual > small { position:absolute; z-index:1; bottom:10px; right:15px; font-size:9px; color:white; text-shadow:0 1px 3px #10253b; }
+.sm-back-stations { display:inline-flex; align-items:center; gap:9px; background:#ffffff10; border:1px solid #ffffff60; padding:10px 14px; color:white; border-radius:8px; font-size:13px; font-weight:700; }
+.sm-back-stations:hover { background:#ffffff20; }
+.sm-launch .destination-bar.prominent { margin-top:24px; max-width:840px; color:#10253b; border-radius:12px; box-shadow:0 8px 30px #05111e26; z-index:2; padding:15px 18px; }
+.destination-bar { border-radius:12px; }.destination-input select { color:#10253b; font-weight:700; }.destination-dates { color:#10253b; }.destination-dates strong { font-weight:600; }
+.destination-input label > span,.destination-dates small { color:#53667a; }
+.sm-destination-grid { padding-top:42px; gap:22px; }
+.sm-destinations-title { grid-column:1/-1; display:flex; align-items:end; justify-content:space-between; flex-wrap:wrap; gap:8px 24px; margin-bottom:2px; }
+.sm-destinations-title .kicker { flex-basis:100%; }.sm-destinations-title h2 { font-size:clamp(30px,3vw,42px); font-weight:900; font-style:italic; letter-spacing:-1.5px; text-transform:uppercase; }.sm-destinations-title h2 span { color:#3478ed; }.sm-destinations-title > p:last-child { color:#5c6d7e; font-size:14px; }
+.sm-destination-card { height:360px; border-radius:13px; background:#10253b; }
+.sm-destination-card::after { inset:42% 0 0; background:linear-gradient(transparent,#071a30e6); }
+.sm-destination-number { border:0; border-radius:5px; background:#d8ff43; color:#10253b; font-weight:900; top:18px; left:18px; }
+.sm-destination-name { left:22px; bottom:24px; gap:10px; }.sm-destination-name strong { text-transform:uppercase; font-size:28px; font-style:italic; font-weight:900; letter-spacing:-.8px; line-height:1.05; }.sm-destination-name > span { font-weight:700; }.sm-destination-name small { color:#d8e5f2; }
+.sm-photo-caption { color:#526779; }
+.sm-guide { padding-top:34px; }.sm-section-heading h2,.sm-screen h2 { font-size:32px; font-weight:850; letter-spacing:-1px; }.sm-category-nav { gap:10px; }
+.sm-category-nav button { background:white; font-weight:700; border-radius:9px; border-color:#dce4ed; }.sm-category-nav button[aria-pressed=true] { background:#10253b; border-color:#10253b; color:#d8ff43; }
+.sm-leisure-card { border-radius:12px; }.sm-leisure-card h3 { font-weight:800; }.sm-place-illustration { background:#e8eff8; color:#3265a0; }
+.sm-official-links { background:#edf3fb; border-color:#d6e2f2; border-radius:12px; }.sm-official-links h3 { font-weight:800; }.sm-guide-empty { background:white; border-radius:12px; }
+.sm-social-invite h2 { font-weight:900; font-style:italic; letter-spacing:-1.4px; }.sm-social-invite { border-color:#dce4ed; }
+.sm-screen { background:#f6f8fb; }.sm-screen .person-card { border-radius:13px; background:white; }.sm-screen .travel-cover { background:#e5edf6; }.travel-destination { background:#10253bef; border-radius:6px; font-weight:800; }
+.sm-screen .chips span { background:#edf2f8; color:#325579; font-size:11px; font-weight:700; }.sm-screen .filters { background:#edf2f8; border:1px solid #dce4ed; border-radius:12px; }
+.sm-segment { background:white; border-radius:10px; }.sm-segment button { border-radius:7px; font-weight:700; }.sm-segment button[aria-pressed=true] { background:#10253b; color:white; }
+.sm-dialog { background:#f6f8fb; border-radius:15px; }.sm-dialog-head { background:#f6f8fb; }.sm-dialog-head .icon-button { background:white; }.sm-dialog .notice { background:#e9f1fb; }
+.sm-trip-form .field input,.sm-trip-form .field select,.sm-trip-form .field textarea { border-radius:8px; }
+.sm-avatar { background:#e9f1fb; }.session-notice,.session-bar { background:#edf5df; color:#314820; }
+.sm-footer { background:#0c1c2c; }.sm-footer .brand svg { color:#d8ff43; }.sm-footer p,.sm-footer small { color:#bfccdb; }.sm-footer nav { color:#dce6f1; }
+.sm-mobile-nav { background:#fff; border-top:1px solid #dce4ed; }.sm-mobile-nav a { color:#586e84; }.sm-mobile-nav a[aria-current] { color:#10253b; }.sm-mobile-nav a[aria-current] svg { background:#d8ff43; border-radius:7px; padding:4px; width:29px; height:29px; margin-top:-8px; }
+@media(max-width:1000px) { .sm-intro h1 { font-size:clamp(42px,6.2vw,65px); }.sm-hero-copy { width:59%; }.sm-hero-visual { width:45%; }.sm-destination-name strong { font-size:24px; } }
+@media(max-width:700px) {
+ .sm-header,.sm-header .header-inner { height:68px; }.sm-publish { font-size:11px; min-height:38px; }
+ .sm-launch .sm-intro { padding-top:30px; padding-bottom:22px; min-height:0; }.sm-hero-copy { width:100%; padding-bottom:5px; }
+ .sm-intro h1 { font-size:clamp(40px,10.5vw,60px); letter-spacing:-2px; line-height:1.02; margin:18px 0; max-width:95%; }
+ .sm-intro .sm-hero-copy > p:not(.kicker) { color:#d0deeb; font-size:14px; max-width:285px; }.sm-launch .kicker { font-size:8px; letter-spacing:1.1px; }
+ .sm-sport-label { font-size:8px; letter-spacing:.5px; gap:5px; margin-top:18px; }.sm-sport-label svg { width:14px; }
+ .sm-hero-visual { display:none; }.sm-launch .destination-bar.prominent { margin-top:22px; padding:14px; border-radius:11px; }.sm-back-stations { font-size:12px; padding:9px 12px; }
+ .sm-destination-grid { padding-top:28px; gap:15px; }.sm-destinations-title { align-items:start; gap:9px; margin-bottom:8px; }.sm-destinations-title h2 { font-size:30px; }.sm-destinations-title > p:last-child { font-size:13px; flex-basis:100%; }
+ .sm-destination-card { height:290px; }.sm-destination-name strong { font-size:29px; }.sm-destination-name { left:20px; bottom:23px; }
+ .sm-guide { padding-top:25px; }.sm-section-heading h2,.sm-screen h2 { font-size:27px; }.sm-category-nav button { border-radius:8px; font-size:12px; }.sm-social-invite h2 { font-size:30px; }
+}
+@media(max-width:380px) { .sm-publish span { display:none; }.sm-publish { min-width:38px; padding:10px; }.sm-header .brand { font-size:20px; }.sm-header-actions { gap:3px; } }
+.skip-link { top:0; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.skip-link:focus { top:10px; width:auto; height:auto; padding:15px; overflow:visible; clip-path:none; white-space:normal; }

@@ -20,3 +20,7 @@ La parte social del ensayo de navegador usa interceptación local con perfiles y
 2. Confirmar registro y emails, recuperación, edición y chat entre dos cuentas verificables en producción. El recorrido conserva los componentes y políticas existentes, pero el ensayo local no sustituye esa comprobación.
 3. Aprobar costes, configurar credenciales de servidor y derechos por fuente, verificar el primer lote con OpenAI y solo entonces programar Cron. La integración externa no se ha invocado con cargo a una cuenta del propietario.
 4. Revisar disponibilidad/condiciones de las fuentes y cuotas reales de Vercel/Supabase. La llamada de prueba gratuita a Overpass agotó el tiempo; el importador devuelve error y no inventa resultados.
+
+## Navegación de estaciones y aspecto deportivo
+
+La guía incorpora «Todas las estaciones», que conserva las fechas. Se comprueba en Chromium el retorno explícito, Atrás y Adelante nativos, cambios de estación desde el selector y recarga de enlaces `?destino=…`. Se mantienen la publicación y acceso modal. Verificación móvil a 390 y 320 px sin desbordamiento horizontal. El nuevo aspecto deportivo utiliza azul noche, hielo y lima; no cambia datos, permisos ni activa automatizaciones.

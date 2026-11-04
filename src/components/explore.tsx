@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowUpRight, CalendarDays, MountainSnow, Utensils, Music2, Footprints } from "lucide-react";
+import { ArrowUpRight, ArrowLeft, CalendarDays, MountainSnow, Utensils, Music2, Footprints } from "lucide-react";
 import { useApp } from "./app-context";
 import { DestinationSelector } from "./destination-selector";
 import Photo from "./photo";
@@ -13,6 +13,32 @@ const icons = { restaurant: Utensils, apres: Music2, event: CalendarDays, activi
 export function Explore() {
  const app = useApp(); const resort = app.resorts.find(r => r.slug === app.selection.slug);
  const source = resort && OFFICIAL_SOURCES[resort.slug];
+ function chooseStation(slug: string) {
+  app.select({...app.selection,slug});
+  const url = new URL(window.location.href);
+  if (slug) url.searchParams.set("destino",slug); else url.searchParams.delete("destino");
+  window.history.pushState({...window.history.state,skimatchDestination:true},"",url);
+  setCategory("restaurant");
+ }
+ function backToStations() {
+  app.select({...app.selection,slug:""});
+  const url = new URL(window.location.href); url.searchParams.delete("destino");
+  window.history.replaceState({...window.history.state},"",url);
+  setCategory("restaurant");
+  window.scrollTo({top:0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+ }
+ useEffect(() => {
+  const restore = () => {
+   if (window.location.pathname !== "/") return;
+   const slug = new URLSearchParams(window.location.search).get("destino") || "";
+   if (!slug || app.resorts.some(r => r.slug === slug)) app.select({...app.selection,slug});
+  };
+  const slug = new URLSearchParams(window.location.search).get("destino");
+  let initial: ReturnType<typeof setTimeout> | undefined;
+  if(slug && app.resorts.some(r => r.slug === slug) && app.selection.slug !== slug) initial=setTimeout(restore,0);
+  window.addEventListener("popstate",restore);
+  return () => { clearTimeout(initial); window.removeEventListener("popstate",restore); };
+ },[app]);
  const [category, setCategory] = useState<LeisureCategory>("restaurant");
  const [items, setItems] = useState<LeisureItem[]>([]); const [loading, setLoading] = useState(false); const [error, setError] = useState("");
  useEffect(() => {
@@ -28,8 +54,9 @@ export function Explore() {
    }
    void load(); return () => { active=false; };
  }, [resort, category, app.selection.from, app.selection.to]);
- return <main className="sm-explore"><section className="container sm-intro"><div><p className="kicker">TU DESTINO. TU GENTE. TU PLAN.</p><h1>¿Dónde vas a esquiar?</h1><p>Descubre qué hacer y con quién compartir la montaña.</p></div><span className="sm-altitude"><MountainSnow size={38}/><span>NOS VEMOS<br/>ARRIBA.</span></span><DestinationSelector prominent /></section>
- {!resort ? <section className="container sm-destination-grid" aria-label="Elige estación">{app.resorts.map((r,i) => <button key={r.id} className="sm-destination-card" onClick={() => app.select({...app.selection,slug:r.slug})}><Photo src={destinationImage(r)} fill sizes="(max-width: 700px) 100vw, 33vw" alt={`Paisaje alpino ilustrativo para ${r.name}`}/><span className="sm-destination-number">0{i+1}</span><span className="sm-destination-name"><small>{r.region}</small><strong>{r.name}</strong><span>Explorar destino <ArrowUpRight size={18}/></span></span></button>)}<p className="sm-photo-caption">Paisajes de montaña ilustrativos; no fotografías verificadas de cada estación.</p></section> : <>
+ return <main className="sm-explore"><section className="sm-launch"><div className="container sm-intro"><div className="sm-hero-copy">{resort ? <button type="button" className="sm-back-stations" onClick={backToStations}><ArrowLeft size={17}/> Todas las estaciones</button> : <p className="kicker">FUERA DE LA RUTINA. DENTRO DE LA MONTAÑA.</p>}<h1>{resort ? <>Tu plan en<br/><em>{resort.name}.</em></> : <>¿Dónde vas<br/>a <em>esquiar?</em></>}</h1><p>{resort ? "Pistas, buenos planes y gente con tus mismas ganas." : "Elige destino. Encuentra tu gente. Comparte la bajada."}</p><span className="sm-sport-label"><MountainSnow size={17}/> ESQUÍ · SNOWBOARD · BUENA COMPAÑÍA</span></div><div className="sm-hero-visual">{(resort || app.resorts[0]) && <Photo key={(resort || app.resorts[0]).id} src={destinationImage(resort || app.resorts[0])} fill sizes="(max-width: 700px) 100vw, 50vw" alt="Paisaje alpino ilustrativo" priority/>}<span className="sm-hero-stamp">NOS VEMOS<br/>ARRIBA ↗</span><small>Paisaje ilustrativo de montaña</small></div><DestinationSelector prominent onDestinationChange={chooseStation}/></div></section>
+
+ {!resort ? <section className="container sm-destination-grid" aria-label="Elige estación"><div className="sm-destinations-title"><p className="kicker">EL PUNTO DE PARTIDA</p><h2>Elige tu terreno<span>.</span></h2><p>Tu destino, tu gente y un buen plan.</p></div>{app.resorts.map((r,i) => <button key={r.id} className="sm-destination-card" onClick={() => chooseStation(r.slug)}><Photo src={destinationImage(r)} fill sizes="(max-width: 700px) 100vw, 33vw" alt={`Paisaje alpino ilustrativo para ${r.name}`}/><span className="sm-destination-number">0{i+1}</span><span className="sm-destination-name"><small>{r.region}</small><strong>{r.name}</strong><span>Explorar destino <ArrowUpRight size={18}/></span></span></button>)}<p className="sm-photo-caption">Paisajes de montaña ilustrativos; no fotografías verificadas de cada estación.</p></section> : <>
  <section className="container sm-guide"><div className="sm-section-heading"><div><p className="kicker">MÁS ALLÁ DE LAS PISTAS</p><h2>Qué hacer en {resort.name}</h2><p className="muted">{source?.places}</p></div><Link href="/viajes" className="text-button">¿Quién va por allí? →</Link></div>
  <nav className="sm-category-nav" aria-label="Categorías de ocio">{LEISURE_CATEGORIES.map(c => { const Icon=icons[c.id];return <button key={c.id} aria-pressed={category===c.id} onClick={() => setCategory(c.id)}><Icon size={20}/>{c.label}</button>; })}</nav>
  {loading ? <div className="sm-skeletons" role="status" aria-label="Cargando lugares"><span/><span/><span/></div> : <>

@@ -4,6 +4,7 @@ import { getResorts } from "@/lib/catalog";
 import { Header, Footer } from "@/components/shell";
 import "./globals.css";
 import "./redesign.css";
+import "./sport.css";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: {
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     locale: "es_ES",
   },
 };
-export const viewport: Viewport = { themeColor: "#102a43" };
+export const viewport: Viewport = { themeColor: "#0c1c2c" };
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const { resorts, error } = await getResorts();
   return (
