@@ -1,3 +1,13 @@
+## Personas, dos fotos y solicitudes
+
+La nueva vista de Personas muestra una ficha cada vez, sin filtros de destino/fechas: fotos, Conectar, Ver viajes y Pasar. Ver viajes abre un diálogo sin perder la ficha actual. Para aparecer y recibir solicitudes hay que tener un viaje vigente publicado y dos fotos. Quien envía la solicitud necesita perfil completo y dos fotos, pero **no necesita un viaje propio**. El chat sigue exigiendo aceptación.
+
+Aplicar **solo** `supabase/people-cards.sql` en el Supabase dedicado a SKI MATCH, después de las instalaciones anteriores de esquema/Storage. Es repetible y conserva las cuentas y chats. Añade validación de dos fotos subidas a Storage al crear/actualizar perfiles y enviar solicitudes. La interfaz pide subir el reemplazo antes de eliminar una de las dos últimas. Si se eliminan por otra vía, el perfil deja de aparecer y no puede enviar nuevas solicitudes hasta completar las fotos; no se modifica el esquema gestionado de Storage. Los perfiles anteriores no se borran: necesitan completar sus fotos para aparecer en las fichas nuevas. Los álbumes se pueden subir antes de guardar el perfil para evitar un bloqueo de registro. Un retrato y una foto adicional, o dos fotos de álbum, cumplen el mínimo; las URLs externas y archivos huérfanos no cuentan por sí solos.
+
+La IA y las tareas programadas continúan desactivadas.
+
+---
+
 # SKI MATCH · Rediseño de noviembre de 2026
 
 La app existente conserva Auth, perfiles/álbum privado, viajes, conexiones, solicitudes, planes y chat. Ahora la entrada pública es **Explorar**, con navegación **Explorar · Viajes · Personas**, destino/fechas compartidos y persistentes, publicación en diálogo, avatar para el perfil y mensajes desde la cabecera.

@@ -3,16 +3,18 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PersonGallery } from "./photo-album";
 import Photo from "./photo";
+import { ConnectionPrompt, useConnectionEligibility } from "./connection-eligibility";
 import { useApp } from "./app-context";
 import { supabase } from "@/lib/supabase";
 import type { Person } from "./station-community";
 
 type PublishedTrip = { id: string; user_id: string; resort_id: string; starts_on: string; ends_on: string; traveling_with?: string; party_size?: number; looking_for?: string; resorts: { name: string; slug: string; image: string } | null; person?: Person };
 const pageSize = 12;
-export function PublishedTrips({ userId, traveler, onClearTraveler, onConnections, onChat, initialMine = false }: { initialMine?: boolean; onChat: (personId: string) => void; userId: string; onManage: () => void; onConnections: () => void; traveler?: { id: string; name: string } | null; onClearTraveler?: () => void }) {
+export function PublishedTrips({ userId, traveler, onClearTraveler, onConnections, onChat, initialMine = false, ignoreSelection = false }: { ignoreSelection?: boolean; initialMine?: boolean; onChat: (personId: string) => void; userId: string; onManage: () => void; onConnections: () => void; traveler?: { id: string; name: string } | null; onClearTraveler?: () => void }) {
   const app = useApp();
-  const station = app.resorts.find(r => r.slug === app.selection.slug)?.id || "";
-  const { from, to } = app.selection;
+  const readiness = useConnectionEligibility(userId);
+  const station = ignoreSelection ? "" : app.resorts.find(r => r.slug === app.selection.slug)?.id || "";
+  const { from, to } = ignoreSelection ? {from:"",to:""} : app.selection;
   const [scope, setScope] = useState(initialMine ? "mine" : "all");
   const [actionMessage, setActionMessage] = useState("");
   const [page, setPage] = useState(0);
@@ -60,12 +62,12 @@ export function PublishedTrips({ userId, traveler, onClearTraveler, onConnection
     return () => { active = false; };
   }, [userId, station, from, to, page, traveler, scope, app.revision]);
   async function connect(t: PublishedTrip) {
-    if (!supabase) return;
+    if (!supabase || !readiness.canConnect) return;
     setSending(t.id); setNotice("");
     try {
-      const result = await supabase.rpc("request_trip_connection", { trip: t.id });
+      const result = await supabase.rpc("request_person_connection", { target_user:t.user_id, target_trip:t.id });
       if (result.error) {
-        setNotice(result.error.code === "PGRST202" ? "Falta activar las conexiones simplificadas en Supabase. Ejecuta simple-connections.sql en el proyecto de SKI MATCH." : result.error.message);
+        setNotice(result.error.code === "PGRST202" ? "Falta activar los requisitos de fotos y viajes en Supabase (people-cards.sql)." : result.error.message);
       } else {
         setNotice("¡Solicitud enviada! Cuando acepte, podréis hablar por chat. No se ha publicado ningún viaje en tu nombre.");
         setSent(s => [...s, t.user_id]);
@@ -75,9 +77,10 @@ export function PublishedTrips({ userId, traveler, onClearTraveler, onConnection
   }
   return <section>
     <h2>{traveler ? `Viajes de ${traveler.name}` : "Viajes que se cruzan con el tuyo"}</h2>
-    {traveler && <button className="text-button" onClick={() => { setPage(0); onClearTraveler?.(); }}>Ver viajes de todos los miembros →</button>}
-    <p className="muted">Ve un viaje que te guste y pulsa «Me interesa». Si la otra persona acepta, podéis hablar. No necesitas publicar un viaje propio.</p>
-    <div className="sm-filter-row"><div className="sm-segment"><button aria-pressed={scope === "all"} onClick={() => { setScope("all"); setPage(0); }}>Todos los viajes</button><button aria-pressed={scope === "mine"} onClick={() => { setScope("mine"); setPage(0); }}>Los míos</button></div><button className="text-button" onClick={() => app.publish()}>+ Publicar viaje</button></div>
+    {traveler && <button className="text-button" onClick={() => { setPage(0); onClearTraveler?.(); }}>{ignoreSelection ? "← Volver a personas" : "Ver viajes de todos los miembros →"}</button>}
+    <p className="muted">Ve un viaje que te guste y pulsa «Me interesa». Si la otra persona acepta, podéis hablar. Puedes conectar si tienes el perfil completo con dos fotos, aunque no hayas publicado un viaje propio.</p>
+    {!traveler && <div className="sm-filter-row"><div className="sm-segment"><button aria-pressed={scope === "all"} onClick={() => { setScope("all"); setPage(0); }}>Todos los viajes</button><button aria-pressed={scope === "mine"} onClick={() => { setScope("mine"); setPage(0); }}>Los míos</button></div><button className="text-button" onClick={() => app.publish()}>+ Publicar viaje</button></div>}
+    <ConnectionPrompt userId={userId}/>
     {actionMessage && <p className="notice" role="status">{actionMessage}</p>}
     {notice && <div className="notice" role="status"><p>{notice}</p><button className="text-button" onClick={onConnections}>Ver conexiones y solicitudes →</button></div>}
     {loading ? <p role="status">Cargando viajes publicados…</p> : error ? <p className="notice" role="alert">{error} <Link href="/cuenta">Mi perfil →</Link></p> : <>
@@ -89,7 +92,7 @@ export function PublishedTrips({ userId, traveler, onClearTraveler, onConnection
           <div className="chips"><span>{t.traveling_with || "Solo/a"}{(t.party_size || 1) > 1 ? ` · ${t.party_size} personas` : ""}</span></div>
           {t.looking_for && <p className="trip-looking-for"><strong>Buscamos:</strong> {t.looking_for}</p>}
           {t.person && <><div className="chips"><span>{t.person.level}</span><span>{t.person.sport}</span></div><p>{t.person.bio || "Unos días de montaña, mejor en compañía."}</p><details><summary>Ver viaje y perfil de {t.person.name}</summary><p>{t.person.preferences || "Todavía no ha indicado preferencias."}</p></details></>}
-          {t.user_id === userId ? <div className="inline-actions"><button className="button button-light" onClick={() => app.publish(t)}>Editar mi viaje</button><button className="text-button" onClick={async () => { if (!supabase || !window.confirm("¿Eliminar este viaje?")) return; const { error } = await supabase.from("trips").delete().eq("id", t.id).eq("user_id", userId); if (error) setActionMessage("No se pudo eliminar el viaje."); else { setTrips(rows => rows.filter(row => row.id !== t.id)); setActionMessage("Viaje eliminado."); } }}>Eliminar</button></div> : connected.includes(t.user_id) ? <button className="button button-dark" onClick={() => onChat(t.user_id)}>Abrir chat</button> : sent.includes(t.user_id) ? <button className="button button-light" onClick={onConnections}>Ver solicitud</button> : <button disabled={!!sending} className="button button-coral" onClick={() => void connect(t)}>{sending === t.id ? "Enviando…" : "Me interesa · Conectar"}</button>}
+          {t.user_id === userId ? <div className="inline-actions"><button className="button button-light" onClick={() => app.publish(t)}>Editar mi viaje</button><button className="text-button" onClick={async () => { if (!supabase || !window.confirm("¿Eliminar este viaje?")) return; const { error } = await supabase.from("trips").delete().eq("id", t.id).eq("user_id", userId); if (error) setActionMessage("No se pudo eliminar el viaje."); else { setTrips(rows => rows.filter(row => row.id !== t.id)); setActionMessage("Viaje eliminado."); } }}>Eliminar</button></div> : connected.includes(t.user_id) ? <button className="button button-dark" onClick={() => onChat(t.user_id)}>Abrir chat</button> : sent.includes(t.user_id) ? <button className="button button-light" onClick={onConnections}>Ver solicitud</button> : <button disabled={!!sending || !readiness.canConnect} className="button button-coral" onClick={() => void connect(t)}>{sending === t.id ? "Enviando…" : "Me interesa · Conectar"}</button>}
           {t.resorts && <small>Las fotos personales las sube cada miembro. Si no tiene fotos, se muestra un paisaje ilustrativo.</small>}
         </div>
       </article>)}</div>

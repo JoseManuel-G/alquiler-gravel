@@ -2,13 +2,14 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { ChevronLeft, ChevronRight, ImagePlus, Trash2 } from "lucide-react";
 import Photo from "./photo";
+import { profilePhotoCount } from "@/lib/profile-photo-rules";
 import { supabase } from "@/lib/supabase";
 
 const bucket = "avatars";
 const maxExtra = 4;
 const prefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/authenticated/avatars/`;
 type AlbumPhoto = { path: string; url: string };
-function useAlbum(userId: string) {
+function useAlbum(userId: string, onPhotosChange?: (urls: string[]) => void) {
   const [photos, setPhotos] = useState<AlbumPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,13 +23,14 @@ function useAlbum(userId: string) {
         const { data, error } = await supabase.storage.from(bucket).list(userId, { limit: 100, search: "gallery-", sortBy: { column: "name", order: "asc" } });
         if (!active) return;
         if (error) throw error;
-        setPhotos((data || []).filter(p => p.name.startsWith("gallery-") && p.id).map(p => { const path = `${userId}/${p.name}`; return { path, url: prefix + path }; }));
+        const rows = (data || []).filter(p => p.name.startsWith("gallery-") && p.id).map(p => { const path = `${userId}/${p.name}`; return { path, url: prefix + path }; });
+        setPhotos(rows); onPhotosChange?.(rows.map(p => p.url));
       } catch { if (active) setError("No se pudieron cargar las fotos."); }
       finally { if (active) setLoading(false); }
     }
     void load();
     return () => { active = false; };
-  }, [userId, revision]);
+  }, [userId, revision, onPhotosChange]);
   return { photos, loading, error, refresh: () => setRevision(r => r + 1) };
 }
 
@@ -46,8 +48,9 @@ export function PersonGallery({ userId, avatar, name, fallback }: { userId: stri
   </div>;
 }
 
-export function AlbumEditor({ userId, enabled }: { userId: string; enabled: boolean }) {
-  const { photos, loading, error, refresh } = useAlbum(userId);
+export function AlbumEditor({ userId, enabled, portrait = "", profileSaved = false, onPhotosChange }: { userId: string; enabled: boolean; portrait?: string; profileSaved?: boolean; onPhotosChange?: (urls: string[]) => void }) {
+  const { photos, loading, error, refresh } = useAlbum(userId,onPhotosChange);
+  const canRemove = !profileSaved || profilePhotoCount(photos.map(p => p.url),portrait,`${prefix}${userId}/`)>2;
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -83,7 +86,7 @@ export function AlbumEditor({ userId, enabled }: { userId: string; enabled: bool
     } finally { setBusy(false); }
   }
   async function remove(path: string) {
-    if (!supabase) return;
+    if (!supabase || !canRemove) return;
     setBusy(true); setMessage("");
     try {
       const { error } = await supabase.storage.from(bucket).remove([path]);
@@ -92,11 +95,12 @@ export function AlbumEditor({ userId, enabled }: { userId: string; enabled: bool
     } catch { setMessage("No se pudo eliminar la foto. Vuelve a intentarlo."); }
     finally { setBusy(false); }
   }
-  return <section className="album-editor" aria-labelledby="album-title"><h2 id="album-title">Más fotos tuyas</h2><p className="muted">Añade hasta cuatro fotos además de tu foto de perfil. Los miembros las verán en tus viajes y tu ficha. Sube solo fotos que puedas compartir.</p>
-    {!enabled && <p className="notice">Guarda primero tu perfil arriba para añadir más fotos.</p>}
-    {loading ? <p role="status">Cargando fotos…</p> : error ? <p className="notice" role="alert">{error} <button className="text-button" onClick={refresh}>Reintentar</button></p> : <div className="album-thumbnails">{photos.map(p => <div key={p.path}><Photo src={p.url} width={140} height={140} alt="Foto de tu álbum" /><button type="button" className="text-button" disabled={busy} onClick={() => void remove(p.path)}><Trash2 size={14} />Eliminar</button></div>)}</div>}
+  return <section className="album-editor" aria-labelledby="album-title"><h2 id="album-title">Tus fotos · mínimo dos</h2><p className="muted">Sube al menos dos fotos para completar tu perfil. Puedes hacerlo antes de guardar tus datos. Los miembros las verán en tus viajes y tu ficha.</p>
+    {!enabled && <p className="notice">Inicia sesión para añadir fotos.</p>}
+    {loading ? <p role="status">Cargando fotos…</p> : error ? <p className="notice" role="alert">{error} <button type="button" className="text-button" onClick={refresh}>Reintentar</button></p> : <div className="album-thumbnails">{photos.map(p => <div key={p.path}><Photo src={p.url} width={140} height={140} alt="Foto de tu álbum" /><button type="button" className="text-button" disabled={busy||!canRemove||p.url===portrait} title={p.url===portrait ? "Cambia la foto principal desde el campo de arriba" : !canRemove ? "Sube otra foto antes de eliminar esta: el mínimo es dos" : "Eliminar esta foto"} onClick={() => void remove(p.path)}><Trash2 size={14} />{p.url===portrait?"Foto principal":"Eliminar"}</button></div>)}</div>}
     {photos.length < maxExtra && <><div className="form-row"><label className="field"><span><ImagePlus size={18} /> Elegir de mi galería</span><input type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={!enabled || loading || busy || !!error} onChange={choose} /></label><label className="field">Hacer una foto<input type="file" accept="image/jpeg,image/png,image/webp" capture="user" disabled={!enabled || loading || busy || !!error} onChange={choose} /></label></div><small>JPG, PNG o WebP · Hasta 5 MB por foto · {Math.max(0, maxExtra - photos.length)} huecos disponibles. La cámara depende del dispositivo y del navegador.</small></>}
     {!!previews.length && <><div className="album-thumbnails">{previews.map(url => <Photo key={url} src={url} width={140} height={140} alt="Vista previa antes de guardar" />)}</div><div className="inline-actions"><button type="button" className="button button-coral" disabled={busy} onClick={() => void upload()}>{busy ? "Guardando…" : `Guardar ${files.length} foto${files.length > 1 ? "s" : ""}`}</button><button type="button" className="text-button" disabled={busy} onClick={() => { setFiles([]); setPreviews([]); }}>Cancelar</button></div></>}
+    {profileSaved && !canRemove && <p className="muted">Debes conservar dos fotos. Para cambiar una, sube primero la nueva.</p>}
     {message && <p className="notice" role="status">{message}</p>}
   </section>;
 }

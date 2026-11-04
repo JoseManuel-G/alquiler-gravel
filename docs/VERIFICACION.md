@@ -24,3 +24,7 @@ La parte social del ensayo de navegador usa interceptación local con perfiles y
 ## Navegación de estaciones y aspecto deportivo
 
 La guía incorpora «Todas las estaciones», que conserva las fechas. Se comprueba en Chromium el retorno explícito, Atrás y Adelante nativos, cambios de estación desde el selector y recarga de enlaces `?destino=…`. Se mantienen la publicación y acceso modal. Verificación móvil a 390 y 320 px sin desbordamiento horizontal. El nuevo aspecto deportivo utiliza azul noche, hielo y lima; no cambia datos, permisos ni activa automatizaciones.
+
+## Personas con fichas individuales
+
+Pruebas de `people-cards.test.mjs`: perfil con cero/una foto rechazado; dos archivos propios de imagen aceptados; archivos vacíos/huérfanos ajenos al álbum no cuentan; si se borran o invalidan archivos por otra vía, no se puede guardar el perfil ni enviar solicitudes con menos de dos; migración repetida conserva perfiles antiguos; destinatarios sin viaje vigente no aparecen ni admiten solicitudes; el solicitante sin viaje propio sí puede conectar con un destinatario con viaje; chat bloqueado hasta aceptación; reejecutar migraciones anteriores actualizadas mantiene los controles. La comprobación real en Storage queda pendiente de ejecutar `people-cards.sql` con credenciales del propietario.

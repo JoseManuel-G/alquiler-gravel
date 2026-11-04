@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { profilePhotoCount } from "@/lib/profile-photo-rules";
 import { AlbumEditor } from "./photo-album";
 import Image from "@/components/photo";
 import Link from "next/link";
@@ -21,6 +22,7 @@ export function Account({ compact = false }: { compact?: boolean }) {
   const [sport, setSport] = useState("Esquí");
   const [bio, setBio] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [albumPhotos, setAlbumPhotos] = useState<string[]>([]);
   const [hasProfile, setHasProfile] = useState(false);
   const [savedAvatar, setSavedAvatar] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -40,6 +42,7 @@ export function Account({ compact = false }: { compact?: boolean }) {
     setPhotoPreview(URL.createObjectURL(file));
     setMessage("");
   }
+  const prospectivePhotos = profilePhotoCount(albumPhotos,avatar,`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/authenticated/avatars/${user?.id}/`,!!photoFile);
   const [preferences, setPreferences] = useState("");
   useEffect(() => {
     if (!supabase) return;
@@ -141,7 +144,8 @@ export function Account({ compact = false }: { compact?: boolean }) {
     setMessage("");
     let uploadedPath: string | null = null;
     try {
-      let nextAvatar = avatar;
+      if (prospectivePhotos<2) throw new Error("Sube al menos dos fotos antes de guardar tu perfil.");
+      let nextAvatar = avatar || albumPhotos[0] || "";
       if (photoFile) {
         const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[photoFile.type];
         uploadedPath = `${user.id}/${crypto.randomUUID()}.${ext}`;
@@ -210,7 +214,7 @@ export function Account({ compact = false }: { compact?: boolean }) {
           <>
             <p className="kicker">TU ESPACIO EN LA MONTAÑA</p>
             <div className="profile-heading">
-              {photoPreview || avatar ? <Image key={photoPreview || avatar} src={photoPreview || avatar} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Todavía no tienes foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
+              {photoPreview || avatar || albumPhotos[0] ? <Image key={photoPreview || avatar || albumPhotos[0]} src={photoPreview || avatar || albumPhotos[0]} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Todavía no tienes foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
               <div><h1>{name.trim() || "Mi perfil"}</h1><p className="muted">Tu perfil en SKI MATCH</p><a href="#profile-photo" className="text-button">{avatar || photoFile ? "Cambiar mi foto" : "Añadir mi foto"}</a></div>
             </div>
             <div className="session-notice" role="status"><ShieldCheck size={20} /><div><strong>Has iniciado sesión</strong><br /><span>{user.email}</span></div></div>
@@ -281,7 +285,7 @@ export function Account({ compact = false }: { compact?: boolean }) {
                 />
               </label>
               <div className="photo-editor">
-                {photoPreview || avatar ? <Image key={photoPreview || avatar} src={photoPreview || avatar} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Sin foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
+                {photoPreview || avatar || albumPhotos[0] ? <Image key={photoPreview || avatar || albumPhotos[0]} src={photoPreview || avatar || albumPhotos[0]} width={96} height={96} alt="Tu foto de perfil" className="profile-photo" /> : <div className="photo-placeholder" aria-label="Sin foto">{name.slice(0, 1).toUpperCase() || "?"}</div>}
                 <div className="field">
                   <label htmlFor="profile-photo">Elegir foto de perfil de mi galería</label>
                   <input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} disabled={busy} aria-describedby="photo-help" />
@@ -290,17 +294,18 @@ export function Account({ compact = false }: { compact?: boolean }) {
                 </div>
                 {(avatar || photoFile) && <button type="button" className="text-button" disabled={busy} onClick={() => { setAvatar(""); setPhotoFile(null); setPhotoPreview(""); }}>Quitar foto</button>}
               </div>
+              <AlbumEditor key={user.id} userId={user.id} enabled={true} portrait={savedAvatar} profileSaved={hasProfile} onPhotosChange={setAlbumPhotos} />
+              <p className="profile-photo-progress" role="status">{prospectivePhotos>=2 ? "✓ Ya tienes las dos fotos necesarias" : `${prospectivePhotos} de 2 fotos · añade ${2-prospectivePhotos} más para completar el perfil`}</p>
               <p className="muted">
                 Tu nombre, edad, nivel, foto y preferencias son visibles para
                 los miembros verificados. Tu email y fecha de nacimiento no se
                 muestran.
               </p>
-              <button disabled={busy} className="button button-coral">
+              <button disabled={busy||prospectivePhotos<2} className="button button-coral">
                 {busy ? "Guardando…" : "Guardar perfil"}{" "}
                 <ArrowRight size={16} />
               </button>
             </form>
-            <AlbumEditor key={user.id} userId={user.id} enabled={hasProfile} />
             <div className="inline-actions" style={{ marginTop: 20 }}>
               <Link href="/comunidad" className="button button-light">
                 Ir a la comunidad
